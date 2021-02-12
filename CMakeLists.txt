@@ -1,0 +1,125 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
+
+OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
+OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
+OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
+
+IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
+  CMAKE_POLICY(SET CMP0048 NEW)
+  SET(CMAKE_CXX_STANDARD 11)
+ENDIF()
+
+PROJECT(SoDaUtils)
+
+SET(SoDaUtils_VERSION_MAJOR 1)
+SET(SoDaUtils_VERSION_MINOR 1)
+SET(SoDaUtils_VERSION_PATCH 0)
+SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
+
+set(SoDaUtils_PACKAGE_DESCRIPTION 
+  "SoDaUtils provides simple string command line parsing for C++ applications."
+)
+
+IF(BUILD_RPM)
+  set(CPACK_GENERATOR "RPM")
+ENDIF()
+
+IF(${BUILD_DEB})
+  set(CPACK_GENERATOR "DEB")
+ENDIF()
+
+# Find the platform release name
+FIND_PROGRAM(LSB_RELEASE lsb_release)
+EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is
+  OUTPUT_VARIABLE OS_RELEASE_NAME
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
+  OUTPUT_VARIABLE OS_RELEASE_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# optimizations
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Debug)
+ENDIF()
+
+IF(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+  SET(MACOSX 1)
+ELSE()
+  SET(MACOSX 0)
+ENDIF()
+	
+SET(CMAKE_CXX_FLAGS_DEBUG "-g")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+
+MESSAGE("SoDaUtils_VERSION=[${SoDaUtils_VERSION}]")
+
+FIND_PACKAGE(Git QUIET)
+
+MESSAGE("SoDaUtils will install in ${CMAKE_INSTALL_PREFIX}")
+
+IF((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
+  EXECUTE_PROCESS(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  EXECUTE_PROCESS(
+    COMMAND git log -1 --command=%h
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  SET(SoDaUtils_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
+  FILE(WRITE ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
+  FILE(APPEND ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
+elseIF(EXISTS ${CMAKE_BINARY_DIR}/saved_git_version.txt)
+  MESSAGE("Retrieving GIT version info from saved_git_version.txt")
+  FILE(STRINGS ${CMAKE_BINARY_DIR}/saved_git_version.txt git_version_strings)
+  LIST(GET git_version_strings 0 GIT_BRANCH)
+  LIST(GET git_version_strings 1 GIT_COMMIT_HASH)
+  SET(SoDaUtils_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
+else()
+  SET(SoDaUtils_GIT_ID "UNKNOWN")  
+ENDIF()
+
+SET(DOXY_PROJECT_VERSION "${SoDaUtils_VERSION}-${SoDaUtils_GIT_ID}")
+
+CONFIGURE_FILE (
+"${PROJECT_SOURCE_DIR}/version.h.in"
+"${PROJECT_BINARY_DIR}/UtilsVersion.h"
+  )
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
+
+INSTALL(FILES ${PROJECT_BINARY_DIR}/UtilsVersion.h DESTINATION "include/SoDa")
+
+CONFIGURE_FILE (
+  "${PROJECT_SOURCE_DIR}/SoDaUtilsConfigVersion.cmake.in"
+  "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
+  @ONLY
+  )  
+
+INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake DESTINATION "lib/cmake/SoDaUtils")
+INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaUtilsConfig.cmake DESTINATION "lib/cmake/SoDaUtils")
+
+# This is the radio interface... 
+ADD_SUBDIRECTORY(src)
+
+IF(NOT DISABLE_DOXYGEN)	
+  FIND_PACKAGE(Doxygen QUIET)
+
+  IF(DOXYGEN_FOUND)
+    MESSAGE("Found Doxygen!")	
+    CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+    ADD_CUSTOM_TARGET(sodacommanddoc ALL
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
+
+    INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/sodacommand/doc)
+  ENDIF()
+ENDIF()
+
