@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <list>
 #include <stdexcept>
+#include <functional>
 
 namespace SoDa {
 
@@ -390,7 +391,6 @@ $ ./OptionsExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
 	}
       }
 
-      template<>
       void setValBase(std::string * v, const std::string & vstr) {
 	*v = vstr; 
       }
