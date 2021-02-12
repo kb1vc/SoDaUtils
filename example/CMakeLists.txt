@@ -21,11 +21,22 @@ FIND_PACKAGE(SoDaUtils REQUIRED)
 
 ########### next target ###############
 
-# Export header files that are required to build loadable modules
 
 add_executable(UtilsExample UtilsExample.cxx)
 target_link_libraries(UtilsExample ${SoDaUtils_LIBRARIES})
 target_include_directories(UtilsExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+
+add_executable(OptionsExample OptionsExample.cxx)
+target_link_libraries(OptionsExample ${SoDaUtils_LIBRARIES})
+target_include_directories(OptionsExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+
+add_executable(FormatExample FormatExample.cxx)
+target_link_libraries(FormatExample ${SoDaUtils_LIBRARIES})
+target_include_directories(FormatExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+
+add_executable(Format_Test Format_Test.cxx)
+target_link_libraries(Format_Test ${SoDaUtils_LIBRARIES})
+target_include_directories(Format_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
 
 

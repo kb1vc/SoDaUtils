@@ -28,7 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * @file Command.hxx
+ * @file Options.hxx
  * @author Matt Reilly (kb1vc)
  * @date Feb 10, 2021
  */
@@ -45,14 +45,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SoDa {
 
 /**
- * @mainpage Command: parse command line options and arguments
+ * @page Options  A Simple Command Line Parser
  * 
- * Command is a class that allows the programmer to specify
+ * Options is a class that allows the programmer to specify
  * command line options (like --help, --out, --enable-deep-fry --set-sauce=Mephis)
  * and parse the (argc, argv) input line.  There are other ways to do
  * this.  BOOST::program_options is great. The posix getopt is not.
  * 
- * What really motivated me to write Command was a desire to
+ * What really motivated me to write Options was a desire to
  * eliminate boost dependencies from software that I've been developing.
  * One could use the BOOST program_options facility. It is very flexible,
  * a model of spectacular use of templates.  I am humbled everytime I
@@ -66,9 +66,9 @@ namespace SoDa {
  * 
  * ## Enough of the witty and entertaining chit-chat. Let's look at an example.
  *
- * The snippets below are from the CommandExample.cxx program in the example directory. 
+ * The snippets below are from the OptionsExample.cxx program in the example directory. 
  * 
- * The Command object is a command line parser that scans an argc/argv list
+ * The Options object is a command line parser that scans an argc/argv list
  * for options (thingies that start with -- or -), their values, and positional
  * arguments. The application programmer specifies the legal option names, 
  * their argument types, and a location for the scanned value -- if found. 
@@ -81,43 +81,43 @@ namespace SoDa {
  * So, let's assume we want to parse a command line that looks something like
  * this: 
  * \verbatim
-$ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg "two two" --strvecarg 3  john paul george ringo
+$ ./OptionsExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg "two two" --strvecarg 3  john paul george ringo
 \endverbatim
  *
  * This is how we might build that: 
- * \snippet CommandExample.cxx describe the command line
+ * \snippet OptionsExample.cxx describe the command line
  * 
- * The example creates a Command object, and then decorates it with options. 
+ * The example creates a Options object, and then decorates it with options. 
  * There are three kinds of options:
  * 
- * * Presence options, added with Command::addP.  A presence option
+ * * Presence options, added with Options::addP.  A presence option
  * sets a selected bool value if it appears on the command line. It takes no
  * value on the command line.
 
- * * Scalar options, added with Command::add<T>. Scalar options take one argument on
+ * * Scalar options, added with Options::add<T>. Scalar options take one argument on
  * the command line. A scalar option can be of any type that is capable of
  * being read by an input stream. Typically, these are int, float, 
  * double, unsigned int, long, unsigned long, or string. If a value is 
  * not supplied, the default value is "filled in" to the target value. 
  * 
- * * Vector options, added with Command::addV<T>. These are identical to scalar 
+ * * Vector options, added with Options::addV<T>. These are identical to scalar 
  * options, with the exception that a vector option may be specified multiple
  * times.  The values taken from the command stream are appended to the
  * supplied vector. 
  * 
- * Help and other command information can be added with the Command::addInfo method. 
+ * Help and other command information can be added with the Options::addInfo method. 
  * 
  * Once the options have been added, and any info supplied, the application
- * can parse the command line by calling Command::parse. Like this
+ * can parse the command line by calling Options::parse. Like this
  * 
- * \snippet CommandExample.cxx parse it
+ * \snippet OptionsExample.cxx parse it
  * 
  * Can't get much simpler than that.  
  *
  * Each of the supplied values will be filled in.  The addP target will be
  * set to "true" if the option appeared on the command line. The app
  * can determine if a particular option appeared at all by calling 
- * Command.isPresent with the long name of the option. 
+ * Options.isPresent with the long name of the option. 
  */
 
   /**
@@ -145,14 +145,14 @@ $ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
    * @brief Command line parser class. 
    * 
    */
-  class Command {
+  class Options {
   public:
     /**
      * @brief constructor.  
      * 
      * No argument here -- this is pretty simple. 
      */
-    Command();
+    Options();
 
     /**
      * @brief add informative information to the printHelp message. 
@@ -161,7 +161,7 @@ $ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
      * 
      * @param info explanation
      */
-    Command & addInfo(const std::string & info);
+    Options & addInfo(const std::string & info);
 
     /**
      * @brief default argument checker.  Returns true regardless of 
@@ -192,10 +192,10 @@ $ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
      * line is acceptable. 
      * @param err_msg message to be printed if the argument value is unacceptable
      * 
-     * @return Command object
+     * @return Options object
      */
     template <typename T>
-    Command & add(T * val,
+    Options & add(T * val,
 		  const std::string & long_name,
 		  char ab_name, 
 		  T def_val = T(),
@@ -224,9 +224,9 @@ $ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
      * @param ab_name the short (one character) version of the option name
      * @param doc_str describes the meaning of the option
      * 
-     * @return Command object
+     * @return Options object
      */
-    Command & addP(bool * val,
+    Options & addP(bool * val,
 		   const std::string & long_name, 
 		   char ab_name, 
 		   const std::string & doc_str = std::string("")) {
@@ -255,10 +255,10 @@ $ ./CommandExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
      * line is acceptable. 
      * @param err_msg message to be printed if the argument value is unacceptable
      * 
-     * @return Command object
+     * @return Options object
      */
     template <typename T>
-    Command & addV(std::vector<T> * val,
+    Options & addV(std::vector<T> * val,
 		   const std::string & long_name, 
 		   char ab_name, 
 		   const std::string & doc_str = std::string(""),

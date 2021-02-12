@@ -1,4 +1,4 @@
-#include "Command.hxx"
+#include "Options.hxx"
 
 /*
 BSD 2-Clause License
@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * @file Command.cxx
+ * @file Options.cxx
  * @author Matt Reilly (kb1vc)
  * @date Feb 10, 2021
  */
@@ -37,16 +37,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
 
-  Command::Command() {
+  Options::Options() {
     // not much to do. 
   }
 
-  Command & Command::addInfo(const std::string & info) {
+  Options & Options::addInfo(const std::string & info) {
     info_list.push_back(info); 
     return * this; 
   }
 
-  std::ostream &  Command::printHelp(std::ostream & os) {
+  std::ostream &  Options::printHelp(std::ostream & os) {
     // print the description
     for(auto istr : info_list) {
       os << istr << "\n";
@@ -63,12 +63,12 @@ namespace SoDa {
     return os; 
   }
 
-  std::string Command::getPosArg(int idx) {
+  std::string Options::getPosArg(int idx) {
     if(idx > pos_arg_vec.size()) return std::string("");
     else return pos_arg_vec[idx]; 
   }
 
-  std::list<std::string> Command::buildTokenList(int argc, char * argv[]) {
+  std::list<std::string> Options::buildTokenList(int argc, char * argv[]) {
     std::list<std::string> ret; 
     if(argc < 2) return ret;
 
@@ -79,7 +79,7 @@ namespace SoDa {
     return ret; 
   }
 
-  int Command::isSwitch(const std::string & tkn) {
+  int Options::isSwitch(const std::string & tkn) {
     if(tkn.length() < 2) return 0;
 
     // does it start with anything other than - ? 
@@ -104,13 +104,13 @@ namespace SoDa {
     return 1; 
   }
 
-  bool Command::parse(int argc, char * argv[]) {
+  bool Options::parse(int argc, char * argv[]) {
     std::list<std::string> tokens = buildTokenList(argc, argv);
 
     return parse(tokens);
   }
 
-  bool Command::parse(std::list<std::string> tokens) {
+  bool Options::parse(std::list<std::string> tokens) {
     OptBase * arg_p = nullptr;
     
     try {
@@ -178,14 +178,14 @@ namespace SoDa {
     return true; 
   }
 
-  Command::OptBase * Command::findOpt(const std::string & long_name) {
+  Options::OptBase * Options::findOpt(const std::string & long_name) {
     if(long_map.find(long_name) == long_map.end()) {
       return nullptr;
     }
     return long_map[long_name];
   }
 
-  Command::OptBase * Command::findOpt(char ab_name) {
+  Options::OptBase * Options::findOpt(char ab_name) {
     if(ab_map.find(ab_name) == ab_map.end()) {
       return nullptr;
     }
@@ -193,21 +193,21 @@ namespace SoDa {
   }
 
 
-  bool Command::isPresent(const std::string & long_name) {
+  bool Options::isPresent(const std::string & long_name) {
     if(long_map.find(long_name) == long_map.end()) {
       return false; 
     }
     return long_map[long_name]->isPresent();
   }
 
-  bool Command::isPresent(char ab_name) {
+  bool Options::isPresent(char ab_name) {
     if(ab_map.find(ab_name) == ab_map.end()) {
       return false; 
     }
     return ab_map[ab_name]->isPresent();
   }
 
-  void Command::registerOpt(OptBase * arg_p, 
+  void Options::registerOpt(OptBase * arg_p, 
 		  const std::string & long_name, 
 			    char ab_name) {
     arg_p->setNames(long_name, ab_name); 
@@ -216,7 +216,7 @@ namespace SoDa {
   }  
 
   
-  std::ostream & Command::OptBase::printHelp(std::ostream & os) {
+  std::ostream & Options::OptBase::printHelp(std::ostream & os) {
     os << doc_str;
     return os; 
   }

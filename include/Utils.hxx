@@ -41,7 +41,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SoDa {
 
 /**
- * @mainpage Utils a basket of little classes, functions, definitions, and
+ * @page Utils Useful functions and such that fill in some gaps
+ * 
+ * Utils is a basket of little classes, functions, definitions, and
  * such that aren't normally provided in C++11 and its standard libraries. 
  * Eventually most of this stuff will disappear, as something like it (though
  * not identical) will get absorbed into the standard. 

@@ -3,6 +3,8 @@
 
 set(UTILS_SRCS
 	Split.cxx
+	Options.cxx
+	Format.cxx
 	)
 
 
@@ -17,6 +19,8 @@ install(TARGETS sodautils DESTINATION lib)
 
 # Export header files that are required to build loadable modules
 
-install(FILES ../include/Utils.hxx DESTINATION "include/SoDa")
+install(DIRECTORY ../include/
+		  DESTINATION "include/SoDa"
+		  FILES_MATCHING PATTERN "*.hxx")
 
 
