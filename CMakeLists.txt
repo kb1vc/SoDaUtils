@@ -95,16 +95,9 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
 
 INSTALL(FILES ${PROJECT_BINARY_DIR}/UtilsVersion.h DESTINATION "include/SoDa")
 
-CONFIGURE_FILE (
-  "${PROJECT_SOURCE_DIR}/SoDaUtilsConfigVersion.cmake.in"
-  "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
-  @ONLY
-  )  
-
-INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake DESTINATION "share/cmake/Modules")
-INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaUtilsConfig.cmake DESTINATION "share/cmake/Modules")
-
 # The library sources
+ADD_SUBDIRECTORY(cmake)
+
 ADD_SUBDIRECTORY(src)
 
 IF(NOT DISABLE_DOXYGEN)	

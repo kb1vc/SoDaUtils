@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <exception>
+#include <stdexcept>
 #include <iostream>
 #include <list>
 
