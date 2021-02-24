@@ -101,8 +101,8 @@ CONFIGURE_FILE (
   @ONLY
   )  
 
-INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake DESTINATION "lib/cmake/SoDaUtils")
-INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaUtilsConfig.cmake DESTINATION "lib/cmake/SoDaUtils")
+INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake DESTINATION "share/cmake/Modules")
+INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaUtilsConfig.cmake DESTINATION "share/cmake/Modules")
 
 # The library sources
 ADD_SUBDIRECTORY(src)
