@@ -83,12 +83,20 @@ int main() {
   }
 
   // now exercise the rounding
+  if (0) {
   double base_val = 111111.0;
   double incr = 0.001;
   for(double v = 0.0; v <= 4.0; v += incr) {
     std::cout << SoDa::Format("RT %0 %1\n").addF(v, 'f', 8, 6).addF(base_val + v, 'e', 3);
   }
-    
+  }
+  
+  int one = 1;
+  int two = 2; 
+  std::string foo = SoDa::Format("This should be one = %0").addI(one).str();
+  std::cout << "foo = [" << foo << "]\n"; 
+  std::string bar = SoDa::Format("This should be one=%0 that should be two=%1").addI(one).addI(two).str();
+  std::cout << "bar = [" << bar << "]\n";  
   SoDa::Format oops("%0\n");
 
   std::cout << oops.addI(3).addI(4);

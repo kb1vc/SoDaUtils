@@ -175,27 +175,29 @@ namespace SoDa {
 
     // build a regular expression from the pattern number
     std::stringstream fpat;
-    fpat << "%" << cur_arg_number << "\\D";  
+    fpat << "(%" << cur_arg_number << ")\\D|(%" << cur_arg_number << ")$";
     std::smatch m;
-    std::regex re(fpat.str());
-    int pattern_length = fpat.str().size() - 2; 
+    std::regex re(fpat.str());    
 
-    std::list<int> match_positions;
+
+    int pattern_length;
+
     for(auto sri  = std::sregex_iterator(fmt_string.begin(), fmt_string.end(), re); 
 	sri != std::sregex_iterator(); 
 	++sri) {
       std::smatch m = *sri; 
-      int fpos = m.position();
-      
+
+      // which one did we match?
+      int midx = (m[1].length() != 0) ? 1 : 2;
+
+      int fpos = m.position();      
+      int pattern_length =  m[midx].length();
+
       if(find(escape_positions.begin(), escape_positions.end(), fpos) == escape_positions.end()) {
-	// insert the field.
-	match_positions.push_front(fpos); 
+	fmt_string.replace(fpos, pattern_length, s);       	
       }
     }
 
-    for(auto p : match_positions) {
-      fmt_string.replace(p, pattern_length, s); 
-    }
     cur_arg_number++;
   }
 
@@ -213,7 +215,6 @@ namespace SoDa {
 	  int fnum = atoi(orig_fmt_string.substr(i+1).c_str());
 	  if(fnum > max_field_num) max_field_num = fnum;
 	  fmt_string.push_back('%');	  
-	  //	  fmt_string.push_back(orig_fmt_string[i+1]);
 	}
       }
       else {
@@ -221,6 +222,7 @@ namespace SoDa {
       }
     }
     fmt_string.push_back(orig_fmt_string[orig_fmt_string.size() - 1]);
+
   }
   
   Format & Format::reset() {
