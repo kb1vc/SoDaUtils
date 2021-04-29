@@ -110,13 +110,8 @@ namespace SoDa {
       else {
 	// get the sign
 	bool is_neg = (v < 0.0);
-
-	// Now do some rounding.
-	// how many significant digits are we going to get?
-	int sig_digs = 3 + frac_precision;
-	v = roundToSigDigs(v, sig_digs);
+	
 	double av = fabs(v);
-	 
 	// first find the log base 10.	
 	double log_10 = log10(av);
 	// now remember the sign
@@ -132,10 +127,9 @@ namespace SoDa {
 	// we're always going to *decrease* the exponent, so we should
 	// always multiply the mantissa by 10
 	ilog_10 = ilog_10 * ((exp_sign_cor < 0.0) ? -1 : 1);
-	
 	while(((ilog_10 % 3) != 0) || (mant < 1.0)) {
 	  mant = 10.0 * mant;
-	  ilog_10 -= 1; 
+	  ilog_10 -= 1;
 	}
 	// now we have a mantissa in the range 1 to 999.99...
 	int whole = rint(floor(mant));

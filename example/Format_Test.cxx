@@ -82,6 +82,10 @@ int main() {
     std:: cout << "\n\n";
   }
 
+  std::cerr << "Negative num test\n";
+  double nv = -3;
+  std::cout << SoDa::Format("A negative number? [%0]\n")
+    .addF(nv, 'e');
   // now exercise the rounding
   if (0) {
   double base_val = 111111.0;
