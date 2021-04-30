@@ -75,8 +75,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ## Enough of the ranting, let's look at an example. 
  * 
  * We'll look at segments of the test program Format_Test.cxx.  It is worth 
- * looking at the whole file, just not all at once.  This text is the doxygen 
- * equivalent of touring the Louvre on a motorcycle. 
+ * looking at the whole file, just not all at once. 
  * 
  * To jump right in, let's imagine that we've got a set of variables that we want
  * to write to std::cout.  

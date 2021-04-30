@@ -37,7 +37,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <list>
 
-
 namespace SoDa {
 
 /**
@@ -58,6 +57,8 @@ namespace SoDa {
   /**
    * @brief squash sequences of spaces into a single space. 
    * 
+   *
+   * 
    * @param str input string -- things like "foo  bar" will be collapsed to "foo bar"
    * @returns the good version
    */
@@ -67,6 +68,8 @@ namespace SoDa {
    * @brief split a string into a vector of strings, based on a set 
    * of delimiter characters. 
    *
+   *
+   * 
    * @param str the string to be chopped up into tokens
    * @param delims a list of delimiter characters
    * @param no_empty if true, empty tokens will not be saved 

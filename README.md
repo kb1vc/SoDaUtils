@@ -12,7 +12,7 @@ There are three pieces right now:
 ## SoDa::Options a simple command line / option parser
 
  SoDa::Options is a class that allows the programmer to specify
- command line options (like --help, --out, --enable-deep-fry --set-sauce=Mephis)
+ command line options (like --help, --out, --enable-deep-fry --set-sauce=Memphis)
  and parse the (argc, argv) input line.  There are other ways to do
  this.  BOOST::program_options is great. The posix getopt is not.
  

@@ -49,7 +49,7 @@ namespace SoDa {
  * @page Options  A Simple Command Line Parser
  * 
  * Options is a class that allows the programmer to specify
- * command line options (like --help, --out, --enable-deep-fry --set-sauce=Mephis)
+ * command line options (like --help, --out, --enable-deep-fry --set-sauce=Memphis)
  * and parse the (argc, argv) input line.  There are other ways to do
  * this.  BOOST::program_options is great. The posix getopt is not.
  * 
@@ -83,6 +83,24 @@ namespace SoDa {
  * this: 
  * \verbatim
 $ ./OptionsExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg "two two" --strvecarg 3  john paul george ringo
+\endverbatim
+ * Which would print
+ * \verbatim
+intarg = 3
+boolarg = 1
+pres_arg = 1
+str_arg = []
+strvecarg s = 
+	[one]
+	[two two]
+	[3]
+An intarg option was present
+posargs = 
+	0	fred
+	1	john
+	2	paul
+	3	george
+	4	ringo
 \endverbatim
  *
  * This is how we might build that: 
@@ -132,6 +150,14 @@ $ ./OptionsExample -i 3 --presarg  --boolarg 1 fred --strvecarg one --strvecarg 
     }
   }; 
 
+  /**
+   * @brief Complain if the supplied value (string) can't be parsed
+   *
+   * Each option defined by a call to Options::add or Options::addV
+   * is associated with a type.  If the string supplied for the option's value
+   * can't be converted to the associated type, the parser will throw this 
+   * exception. 
+   */
   class BadOptValueException : public std::runtime_error {
   public:
     BadOptValueException(const std::string & long_name,
