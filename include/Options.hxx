@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <list>
 #include <stdexcept>
 #include <functional>
+#include <algorithm>
 
 namespace SoDa {
 
@@ -225,7 +226,7 @@ posargs =
     Options & add(T * val,
 		  const std::string & long_name,
 		  char ab_name, 
-		  T def_val = T(),
+		  T def_val,
 		  const std::string & doc_str = std::string(""),
 		  const std::function<bool(T)> & test_func = [](T v){ return true; },
 		  const std::string & err_msg = std::string("")) {
@@ -239,7 +240,22 @@ posargs =
       return *this;      
     }
 
-		  
+    template <typename T>
+    Options & add(T * val,
+		  const std::string & long_name,
+		  char ab_name, 
+		  const std::string & doc_str = std::string(""),
+		  const std::function<bool(T)> & test_func = [](T v){ return true; },
+		  const std::string & err_msg = std::string("")) {
+
+      // create an arg object and push it. 
+      auto arg_p = new Opt<T>(val, 
+			      doc_str, test_func, err_msg);
+
+      registerOpt(arg_p, long_name, ab_name);
+      return *this;      
+    }
+    
     /**
      * @brief Add an option specifier to the command line that takes no
      * argument, but may be tested for its "presence" on the command line. 
@@ -374,8 +390,9 @@ posargs =
     class OptBase {
     public:
       OptBase(const std::string & doc_str, 
-	      const std::string & err_msg) : 
-	doc_str(doc_str), err_msg(err_msg) {
+	      const std::string & err_msg, 
+	      bool has_default = true) : 
+	doc_str(doc_str), err_msg(err_msg), has_default(has_default) {
 	present = false; 
       }
 
@@ -401,10 +418,11 @@ posargs =
 	ab_name =abn; 
       }
       
-
+      virtual bool hasDefault() { return has_default; }
       
       std::string long_name;
-      char ab_name; 
+      char ab_name;
+      bool has_default;
       
     protected:
       
@@ -420,7 +438,37 @@ posargs =
       void setValBase(std::string * v, const std::string & vstr) {
 	*v = vstr; 
       }
-      
+
+      void setValBase(bool * v, const std::string & vstr) {
+	auto vs = vstr;
+	std::transform(vs.begin(), vs.end(), vs.begin(), 
+		       [](unsigned char c){ return std::toupper(c);} );
+
+	if(vs.size() == 0) {
+	  *v = false;
+	}
+	if((vs == "TRUE") || (vs[0] == 'T')) {
+	  *v = true;
+	}
+	else if((vs == "FALSE") || (vs[0] == 'F')){
+	  *v = false;
+	}
+	else {
+	  int foo;
+	  std::stringstream ss(vs, std::ios::in);
+	  ss >> foo;
+	  if(!ss) {
+	    throw BadOptValueException(long_name, vstr, err_msg); 	    
+	  }
+	  else {
+	    *v = (foo != 0);
+	  }
+	}
+
+	return; 
+	
+	
+      }
       std::string doc_str;
       std::string err_msg;
       
@@ -431,15 +479,24 @@ posargs =
     class Opt : public OptBase {
     public:
       Opt(T * val,
-	  T def_val = T(),
+	  T def_val,
 	  const std::string & doc_str = std::string(""),
 	  const std::function<bool(T)> & test_func = allGood,
 	  const std::string & err_msg = std::string("")) : 
-	OptBase(doc_str, err_msg), val_p(val), test_func(test_func)
+	OptBase(doc_str, err_msg, true), val_p(val), test_func(test_func)
       {
 	*val = def_val; 
       }
 
+      Opt(T * val,
+	  const std::string & doc_str = std::string(""),
+	  const std::function<bool(T)> & test_func = allGood,
+	  const std::string & err_msg = std::string("")) : 
+	OptBase(doc_str, err_msg, false), val_p(val), test_func(test_func)
+      {
+	*val = T();
+      }
+      
       bool setVal(const std::string & vstr) {
 	setValBase(val_p, vstr);
 	if (!test_func(*val_p)) {
@@ -461,7 +518,7 @@ posargs =
 	     const std::string & doc_str, 
 	     const std::function<bool(T)> & test_func = allGood, 
 	     const std::string & err_msg = std::string("")) :
-	OptBase(doc_str, err_msg), 
+	OptBase(doc_str, err_msg, false), 
 	argvec_p(v_vec), 
 	test_func(test_func)
       {

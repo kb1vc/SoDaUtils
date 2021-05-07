@@ -118,7 +118,16 @@ namespace SoDa {
       std::string tkn = tokens.front();
       tokens.pop_front();
 
-      int sw_len = isSwitch(tkn);
+      int sw_len;
+      if((arg_p == nullptr) || (arg_p->hasDefault())) {
+	sw_len = isSwitch(tkn);      	
+      }
+      else {
+	// we have an argpointer and there is no default
+	// we need to eat the next token. 
+	sw_len = 0; 
+      }
+
 
       if(sw_len == 0) {
 	// we know this is either a positional argument, or 

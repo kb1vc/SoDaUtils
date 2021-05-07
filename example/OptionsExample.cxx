@@ -53,7 +53,7 @@ int main(int argc, char * argv[])
     .add<std::string>(&str_arg, "strarg", 's', "", "<string>") // , "Not Specified")
     .addV<std::string>(&strvec_arg, "strvecarg", 'l', "<string>")
 
-    .add<int>(&int_arg, "intarg", 'i', -1,
+    .add<int>(&int_arg, "intarg", 'i', 
 	       "An integer argument between -5 and 5 inclusive", 
 	       [](int v) { return (v >= -5) && (v <= 5); },
 	       "Please pick something from -5 to 5.")
