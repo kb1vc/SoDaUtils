@@ -339,6 +339,17 @@ posargs =
      *
      */
     bool parse(std::list<std::string> arglist);
+
+    /**
+     * @brief Parse a list of tokens from a string
+     * 
+     * @param s string of tokens to be parsed. 
+     * 
+     * @return true if there was no problem interpreting the list.
+     * false on error. 
+     *
+     */
+    bool parse(const std::string & s);
     
     /**
      * @brief print the help and info strings. 
@@ -580,6 +591,7 @@ posargs =
 
 
     std::list<std::string> buildTokenList(int argc, char * argv[]);
+    std::list<std::string> buildTokenList(const std::string & s);    
     
     std::map<std::string, OptBase * > long_map;
     std::map<char, OptBase * > ab_map; 

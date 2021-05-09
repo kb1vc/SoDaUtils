@@ -81,6 +81,15 @@ int main(int argc, char * argv[])
   for(int i = 0; i < cmd.numPosArgs(); i++) {
     std::cout << "\t" << i << "\t" << cmd.getPosArg(i) << "\n";
   }
+
+  // now try it with a string
+  if(!cmd.parse(std::string("-i 3 -s \"this is a test\""))) exit(-1);
+
+  std::cout << "intarg = " << int_arg << "\n";
+  std::cout << "boolarg = " << bool_arg << "\n";
+  std::cout << "pres_arg = " << pres_arg << "\n";
+  std::cout << "str_arg = [" << str_arg << "]\n";
+  std::cout << "strvecarg s = \n";
   
   exit(0);
 }

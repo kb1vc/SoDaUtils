@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @date Feb 10, 2021
  */
 
+#include <cctype>
 
 namespace SoDa {
 
@@ -79,6 +80,44 @@ namespace SoDa {
     return ret; 
   }
 
+  std::list<std::string> Options::buildTokenList(const std::string & s) {
+    std::list<std::string> ret;
+    std::string cur_tkn("");
+    bool in_quote = false; 
+    for(auto c : s) {
+      if(isspace(c)) {
+	if(in_quote) {
+	  cur_tkn.push_back(c);
+	}
+	else if(cur_tkn.length() > 0) {
+	  ret.push_back(cur_tkn);
+	  cur_tkn.clear();
+	}
+      }
+      else if(c == '\"') {
+	if(in_quote) {
+	  // push the token. 
+	  ret.push_back(cur_tkn);
+	  cur_tkn.clear();
+	  in_quote = false; 
+	}
+	else {
+	  // start of a quoted string...
+	  in_quote = true; 
+	}
+      }
+      else {
+	cur_tkn.push_back(c);
+      }
+    }
+
+    if(cur_tkn.length() > 0) {
+      ret.push_back(cur_tkn);
+    }
+
+    return ret; 
+  }
+
   int Options::isSwitch(const std::string & tkn) {
     if(tkn.length() < 2) return 0;
 
@@ -106,6 +145,12 @@ namespace SoDa {
 
   bool Options::parse(int argc, char * argv[]) {
     std::list<std::string> tokens = buildTokenList(argc, argv);
+
+    return parse(tokens);
+  }
+
+  bool Options::parse(const std::string & s) {
+    std::list<std::string> tokens = buildTokenList(s);
 
     return parse(tokens);
   }
