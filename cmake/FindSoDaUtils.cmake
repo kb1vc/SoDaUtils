@@ -1,5 +1,4 @@
 # Find the SoDaUtils library
-message("In FindSoDaUtils.cmake")
 # This defines:
 
 #  SoDaUtils_INCLUDE_DIR contains SoDa/*.h
@@ -12,8 +11,6 @@ find_path(SoDaUtils_INCLUDE_DIR
 
 find_library(SoDaUtils_LIBRARY sodautils)
 
-message("include ${SoDaUtils_INCLUDE_DIR}")
-message("lib ${SoDaUtils_LIBRARY}")
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SoDaUtils
