@@ -100,9 +100,15 @@ int main() {
   std::string foo = SoDa::Format("This should be one = %0").addI(one).str();
   std::cout << "foo = [" << foo << "]\n"; 
   std::string bar = SoDa::Format("This should be one=%0 that should be two=%1").addI(one).addI(two).str();
-  std::cout << "bar = [" << bar << "]\n";  
-  SoDa::Format oops("%0\n");
-
-  std::cout << oops.addI(3).addI(4);
+  std::cout << "bar = [" << bar << "]\n";
+  try {
+    SoDa::Format oops("%0\n");
+    std::cout << oops.addI(3).addI(4);    
+  }
+  catch (SoDa::Format::BadFormat & e) {
+    std::cout << "Last call was supposed to throw a BadFormat exception ";
+    std::cout << "that complains about\n \t \"Too many arguments (2) passed to Format. Format string was %0\"\n\n";
+    std::cout << e.what(); 
+  }
   
 }

@@ -437,7 +437,8 @@ namespace SoDa {
        * original format spec. 
        */
       BadFormat(const std::string & problem, const Format & fmt) :
-	std::runtime_error(problem + " format string was \n" + fmt.getOrig()) { }
+	std::runtime_error(problem + " Format string was \n\"" 
+			   + fmt.getOrig() + "\"\n") { }
     };
 
     /**
