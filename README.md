@@ -79,6 +79,29 @@ Who even *thinks* like that?
 Right now the only "miscellaneous" stuff has to do with splitting strings.
 See the documentation for Utils.hxx for more information. 
 
+## Dependencies
+
+SoDaSignals requires very little in terms of libraries and other
+stuff.
+  . git
+  . cmake
+  . C++: Any version supporting the C++11 standard
+  
+and that's it.
+
+For Fedora 34: 
+```
+dnf install gcc-c++ n
+dnf install git cmake
+```
+
+
+Optionally, to get nice documentation in html form
+```
+dnf install doxygen
+```
+
+
 ## Installing
 
 Just like any other CMake project.  For instance, to install the
@@ -92,10 +115,35 @@ make
 sudo make install
 ```
 
+
 This will install the libraries in /usr/local/lib or lib64 as appropriate
 and all the useful include files in /usr/local/include/SoDa
 
 It will also write doxygen output that starts at /usr/local/share/doc/SoDaUtils/html/index.html
+
+
+### Installing Without root
+It is possible to install the library in a private directory (without needing root) like this: 
+
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/my_tools/
+make
+sudo make install
+```
+
+This should work just fine, but if you do, then any build that *uses*
+SoDaSignals needs to add this to its cmake
+
+```
+cmake -DCMAKE_PATH_PREFIX=${HOME}/my_tools
+```
+
+That will tell cmake to look in your directory for the relevant cmake
+files that describe where to find the libraries and headers.
+
 
 
 ## Testing and Using it all
