@@ -106,7 +106,7 @@ int main() {
     std::cout << oops.addI(3).addI(4);    
   }
   catch (SoDa::Format::BadFormat & e) {
-    std::cout << "Last call was supposed to throw a BadFormat exception ";
+    std::cout << "Last call is supposed to throw a BadFormat exception ";
     std::cout << "that complains about\n \t \"Too many arguments (2) passed to Format. Format string was %0\"\n\n";
     std::cout << e.what(); 
   }

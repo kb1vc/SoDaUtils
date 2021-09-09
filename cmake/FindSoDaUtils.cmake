@@ -5,6 +5,8 @@
 #  SoDaUtils_LIBRARIES points to libsodautils...
 #  SoDaUtils_FOUND true if we found it. 
 
+message("In FindSoDaUtils.cmake")
+
 find_path(SoDaUtils_INCLUDE_DIR
   NAMES SoDa/Format.hxx
   )

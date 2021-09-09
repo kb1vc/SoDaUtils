@@ -87,7 +87,7 @@ package in /usr/local ... From this directory
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ../
 make
 sudo make install
 ```
@@ -95,13 +95,15 @@ sudo make install
 This will install the libraries in /usr/local/lib or lib64 as appropriate
 and all the useful include files in /usr/local/include/SoDa
 
-It will also write doxygen output that starts at /usr/local/share/doc/SoDa/html/index.html
+It will also write doxygen output that starts at /usr/local/share/doc/SoDaUtils/html/index.html
 
 
 ## Testing and Using it all
 
 Take a look at the CMakeLists.txt file and OptionsExample.cxx and FormatExample.cxx in the example
-directory.  If the installation has gone right, then you should be able to do this from this directory.
+directory.  If the installation has gone right, then you should be able to do this from this directory.  But remember, if you installed the utils in some nonstandard directory, you'll need to add
+```
+```
 
 ```
 cd example
