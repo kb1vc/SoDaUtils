@@ -89,16 +89,28 @@ stuff.
   
 and that's it.
 
-For Fedora 34: 
+### For Fedora 34: 
 ```
-dnf install gcc-c++ n
+dnf install gcc-c++ 
 dnf install git cmake
 ```
-
 
 Optionally, to get nice documentation in html form
 ```
 dnf install doxygen
+```
+
+### For Unbuntu 21
+
+```
+apt install g++
+apt install git
+apt install cmake
+```
+
+And the optional doxygen kit: 
+```
+apt install doxygen
 ```
 
 
