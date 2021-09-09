@@ -8,12 +8,7 @@ set(UTILS_SRCS
 	)
 
 
-IF(MACOSX) 
-  add_library(sodautils SHARED ${UTILS_SRCS})
-ELSE()
-  add_library(sodautils STATIC ${UTILS_SRCS})
-  set_target_properties(sodautils PROPERTIES POSITION_INDEPENDENT_CODE ON)
-ENDIF()
+add_library(sodautils SHARED ${UTILS_SRCS})
 
 
 install(TARGETS sodautils DESTINATION lib)
