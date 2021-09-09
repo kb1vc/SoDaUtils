@@ -129,7 +129,7 @@ It is possible to install the library in a private directory (without needing ro
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${HOME}/my_tools/
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/my_tools/ ../
 make
 sudo make install
 ```
@@ -138,7 +138,7 @@ This should work just fine, but if you do, then any build that *uses*
 SoDaSignals needs to add this to its cmake
 
 ```
-cmake -DCMAKE_PATH_PREFIX=${HOME}/my_tools
+cmake -DCMAKE_PREFIX_PATH=${HOME}/my_tools ../
 ```
 
 That will tell cmake to look in your directory for the relevant cmake
@@ -151,6 +151,7 @@ files that describe where to find the libraries and headers.
 Take a look at the CMakeLists.txt file and OptionsExample.cxx and FormatExample.cxx in the example
 directory.  If the installation has gone right, then you should be able to do this from this directory.  But remember, if you installed the utils in some nonstandard directory, you'll need to add
 ```
+cmake -DCMAKE_PREFIX_PATH=${HOME}/my_tools ../
 ```
 
 ```
