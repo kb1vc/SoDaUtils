@@ -12,12 +12,12 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 SET(SoDaUtils_VERSION_MAJOR 1)
-SET(SoDaUtils_VERSION_MINOR 1)
+SET(SoDaUtils_VERSION_MINOR 2)
 SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
 set(SoDaUtils_PACKAGE_DESCRIPTION 
-  "SoDaUtils provides simple string command line parsing for C++ applications."
+  "SoDaUtils provides simple string formatting and command line parsing for C++ applications."
 )
 
 IF(BUILD_RPM)
@@ -113,3 +113,4 @@ IF(NOT DISABLE_DOXYGEN)
   ENDIF()
 ENDIF()
 
+INCLUDE(cmake/BuildPackage.cmake)
