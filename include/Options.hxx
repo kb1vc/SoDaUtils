@@ -178,9 +178,10 @@ posargs =
     /**
      * @brief constructor.  
      * 
-     * No argument here -- this is pretty simple. 
+     * @param is_kvp If true, this parser is for a key=value pair list. 
+     * (see parseKeyValue)
      */
-    Options();
+    Options(bool is_kvp = false);
 
     /**
      * @brief add informative information to the printHelp message. 
@@ -394,6 +395,46 @@ posargs =
      */
     int numPosArgs() { return pos_arg_vec.size(); }
 
+    /**
+     * @brief parse argument list in the form of a key-value pair
+     * 
+     * Used for options-lists within options-lists like
+     * ```
+     * my_program --internal_args "infile=foo, outfile=bar"
+     * ```
+     * since lists-within-lists don't really work all that well. 
+     * 
+     * Indvidual key-value pairs should be separated by commas
+     * 
+     * @param s string of key=value pairs to be parsed
+     * 
+     * @return true if there was no problem interpreting the list
+     * false on error. 
+     * 
+     */
+    bool parseKeyValue(const std::string & s);
+
+/**
+     * @brief parse argument list in the form of a key-value pair
+     * 
+     * Used for options-lists within options-lists like
+     * ```
+     * my_program --internal_args "infile=foo, outfile=bar"
+     * ```
+     * since lists-within-lists don't really work all that well. 
+     * 
+     * Indvidual key-value pairs should be separated by commas
+     * 
+     * @param ls a list of a string of key=value pairs to be parsed
+     * 
+     * @return true if there was no problem interpreting the list
+     * false on error. 
+     * 
+     */
+    bool parseKeyValue(const std::list<std::string> & ls);
+
+    
+    
   private:
 
     int isSwitch(const std::string & tkn);
@@ -597,8 +638,10 @@ posargs =
     std::map<char, OptBase * > ab_map; 
 
     std::list<std::string> info_list; 
+    
+    std::vector<std::string> pos_arg_vec;
 
-    std::vector<std::string> pos_arg_vec; 
+    bool is_kvp; 
   };
   
 }

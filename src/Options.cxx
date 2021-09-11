@@ -1,4 +1,5 @@
 #include "Options.hxx"
+#include "Utils.hxx"
 
 /*
 BSD 2-Clause License
@@ -38,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
 
-  Options::Options() {
+  Options::Options(bool is_kvp) : is_kvp(is_kvp) {
     // not much to do. 
   }
 
@@ -54,9 +55,16 @@ namespace SoDa {
     }
 
     // now print the arguments
+    std::string prefix("");
+    if(!is_kvp) prefix = "--";
     for(auto ele : long_map) {
       auto arg_p = ele.second;
-      os << "\t--" << arg_p->long_name << "\t-" << arg_p->ab_name << "\t";
+      if(is_kvp) {
+	os << "\t" << arg_p->long_name << "\t";
+      }
+      else {
+	os << "\t--" << arg_p->long_name << "\t-" << arg_p->ab_name << "\t";
+      }
       arg_p->printHelp(os);
       os << "\n";
     }
@@ -146,10 +154,12 @@ namespace SoDa {
   bool Options::parse(int argc, char * argv[]) {
     std::list<std::string> tokens = buildTokenList(argc, argv);
 
-    return parse(tokens);
+    return is_kvp ? parseKeyValue(tokens) : parse(tokens);
   }
 
   bool Options::parse(const std::string & s) {
+    if(is_kvp) return parseKeyValue(s);
+    
     std::list<std::string> tokens = buildTokenList(s);
 
     return parse(tokens);
@@ -157,7 +167,6 @@ namespace SoDa {
 
   bool Options::parse(std::list<std::string> tokens) {
     OptBase * arg_p = nullptr;
-    
     try {
     while(!tokens.empty()) {
       std::string tkn = tokens.front();
@@ -269,9 +278,43 @@ namespace SoDa {
     ab_map[ab_name] = arg_p;       
   }  
 
-  
   std::ostream & Options::OptBase::printHelp(std::ostream & os) {
     os << doc_str;
     return os; 
+  }
+
+  bool Options::parseKeyValue(const std::string & s) {
+    // first split the list at commas.
+    if(s.size() == 0) return false;    
+    auto kvp_list = SoDa::split(s, std::string(","));
+    if(kvp_list.size() == 0) return false;
+    
+    return parseKeyValue(kvp_list);
+  }
+  
+  bool Options::parseKeyValue(const std::list<std::string> & l_kvp) {
+    // for each item in the kvp list,
+    // trim the item,
+    // add the pair to a token list
+    std::list<std::string> tknlist; 
+    
+    for(auto kv_a : l_kvp) {
+      auto kv = SoDa::squashSpaces(kv_a);
+      
+      // now we've got a key=value pair.  Split that at the =
+      auto kvp = SoDa::split(kv, std::string("="));
+      auto key = kvp.front();
+      auto value = kvp.back();
+
+      // ok. now we're going to re-use some stuff from the "parse a
+      // command line" functions
+      key = "--" +  key;
+
+      tknlist.push_back(key);
+      tknlist.push_back(value);
+      // find the option name
+    }
+
+    return parse(tknlist);    
   }
 }
