@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
 
+
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
@@ -117,4 +118,6 @@ ENDIF()
 
 INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/ DESTINATION share/SoDaUtils/examples)
 
+IF(BUILD_RPM OR BUILD_DEB) 
 INCLUDE(cmake/BuildPackage.cmake)
+ENDIF()
