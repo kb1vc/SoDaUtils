@@ -68,11 +68,11 @@ int main(int argc, char * argv[])
   if(!cmd.parse(argc, argv)) exit(-1);
   //! [parse it]
 
-  SoDa::Options kvp;  
+  SoDa::Options kvp(true);  
   std::string val1, val2;
   int ival;
   std::cout << "key value pair = [" << kvp_arg << "]\n";
-  kvp(true)
+  kvp
     .add<std::string>(&val1, "key1", '1', "empty", "value for key1")
     .add<std::string>(&val2, "key2", '2', "empty", "value for key2")
     .add<int>(&ival, "ikey", 'i', 3, "integer value");
