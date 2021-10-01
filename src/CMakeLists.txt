@@ -8,7 +8,7 @@ set(UTILS_SRCS
 	)
 
 
-add_library(sodautils SHARED ${UTILS_SRCS})
+add_library(sodautils STATIC ${UTILS_SRCS})
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 
 install(TARGETS sodautils DESTINATION ${LIBDIR})
