@@ -79,6 +79,41 @@ Who even *thinks* like that?
 Right now the only "miscellaneous" stuff has to do with splitting strings.
 See the documentation for Utils.hxx for more information. 
 
+## Dependencies
+
+SoDaSignals requires very little in terms of libraries and other
+stuff.
+  . git
+  . cmake
+  . C++: Any version supporting the C++11 standard
+  
+and that's it.
+
+### For Fedora 34: 
+```
+dnf install gcc-c++ 
+dnf install git cmake
+```
+
+Optionally, to get nice documentation in html form
+```
+dnf install doxygen
+```
+
+### For Unbuntu 21
+
+```
+apt install g++
+apt install git
+apt install cmake
+```
+
+And the optional doxygen kit: 
+```
+apt install doxygen
+```
+
+
 ## Installing
 
 Just like any other CMake project.  For instance, to install the
@@ -87,21 +122,49 @@ package in /usr/local ... From this directory
 ```
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local ../
 make
 sudo make install
 ```
 
+
 This will install the libraries in /usr/local/lib or lib64 as appropriate
 and all the useful include files in /usr/local/include/SoDa
 
-It will also write doxygen output that starts at /usr/local/share/doc/SoDa/html/index.html
+It will also write doxygen output that starts at /usr/local/share/doc/SoDaUtils/html/index.html
+
+
+### Installing Without root
+It is possible to install the library in a private directory (without needing root) like this: 
+
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${HOME}/my_tools/ ../
+make
+sudo make install
+```
+
+This should work just fine, but if you do, then any build that *uses*
+SoDaSignals needs to add this to its cmake
+
+```
+cmake -DCMAKE_PREFIX_PATH=${HOME}/my_tools ../
+```
+
+That will tell cmake to look in your directory for the relevant cmake
+files that describe where to find the libraries and headers.
+
 
 
 ## Testing and Using it all
 
 Take a look at the CMakeLists.txt file and OptionsExample.cxx and FormatExample.cxx in the example
-directory.  If the installation has gone right, then you should be able to do this from this directory.
+directory.  If the installation has gone right, then you should be able to do this from this directory.  But remember, if you installed the utils in some nonstandard directory, you'll need to add
+```
+cmake -DCMAKE_PREFIX_PATH=${HOME}/my_tools ../
+```
 
 ```
 cd example

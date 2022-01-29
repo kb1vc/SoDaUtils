@@ -1,4 +1,5 @@
 #include "Utils.hxx"
+#include <iostream>
 
 /*
 BSD 2-Clause License
@@ -68,7 +69,7 @@ namespace SoDa {
 
     // scan for delims
     while((pos = wrk.find_first_of(delims, old_pos)) != std::string::npos) {
-      std::string tkn = wrk.substr(old_pos, pos - old_pos); 
+      std::string tkn = wrk.substr(old_pos, pos - old_pos);
       if(no_empty && (tkn.length() == 0)) {
 	// do nothing.  -- yup, I know.  But would you write it more clearly?
       }

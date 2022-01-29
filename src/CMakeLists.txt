@@ -8,15 +8,10 @@ set(UTILS_SRCS
 	)
 
 
-IF(MACOSX) 
-  add_library(sodautils SHARED ${UTILS_SRCS})
-ELSE()
-  add_library(sodautils STATIC ${UTILS_SRCS})
-  set_target_properties(sodautils PROPERTIES POSITION_INDEPENDENT_CODE ON)
-ENDIF()
+add_library(sodautils STATIC ${UTILS_SRCS})
+set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 
-
-install(TARGETS sodautils DESTINATION lib)
+install(TARGETS sodautils DESTINATION ${LIBDIR})
 
 # Export header files that are required to build loadable modules
 

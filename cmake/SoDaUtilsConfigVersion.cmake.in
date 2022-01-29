@@ -27,8 +27,6 @@
 #
 
 #inspired in part by version checking in libuhd's configversion file
-message("In SoDaUtilsConfigVersion.cmake")
-
 
 set(MAJOR_VERSION "@SoDaUtils_VERSION_MAJOR@")
 set(MINOR_VERSION "@SoDaUtils_VERSION_MINOR@")

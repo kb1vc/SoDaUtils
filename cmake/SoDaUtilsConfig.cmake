@@ -27,9 +27,8 @@
 #
 
 set(SoDaUtils_FOUND TRUE)
-message("In SoDaUtilsConfig.cmake")
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 set(SoDaUtils_INCLUDE_HINTS)
 set(SoDaUtils_LIB_HINTS)

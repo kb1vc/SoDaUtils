@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
 
+
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
@@ -11,13 +12,15 @@ ENDIF()
 
 PROJECT(SoDaUtils)
 
+INCLUDE(GNUInstallDirs)
+
 SET(SoDaUtils_VERSION_MAJOR 1)
-SET(SoDaUtils_VERSION_MINOR 2)
+SET(SoDaUtils_VERSION_MINOR 4)
 SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
 set(SoDaUtils_PACKAGE_DESCRIPTION 
-  "SoDaUtils provides simple string command line parsing for C++ applications."
+  "SoDaUtils provides simple string formatting and command line parsing for C++ applications."
 )
 
 IF(BUILD_RPM)
@@ -56,8 +59,6 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
 MESSAGE("SoDaUtils_VERSION=[${SoDaUtils_VERSION}]")
 
 FIND_PACKAGE(Git QUIET)
-
-MESSAGE("SoDaUtils will install in ${CMAKE_INSTALL_PREFIX}")
 
 IF((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
   EXECUTE_PROCESS(
@@ -105,7 +106,6 @@ IF(NOT DISABLE_DOXYGEN)
   FIND_PACKAGE(Doxygen QUIET)
 
   IF(DOXYGEN_FOUND)
-    MESSAGE("Found Doxygen!")	
     CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     ADD_CUSTOM_TARGET(sodautilsdoc ALL
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
@@ -113,7 +113,12 @@ IF(NOT DISABLE_DOXYGEN)
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 
-    INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/SoDa)
+    INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/SoDaUtils/doc)
   ENDIF()
 ENDIF()
 
+INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/ DESTINATION share/SoDaUtils/examples)
+
+IF(BUILD_RPM OR BUILD_DEB) 
+INCLUDE(cmake/BuildPackage.cmake)
+ENDIF()
