@@ -133,7 +133,12 @@ namespace SoDa {
 	}
 	// now we have a mantissa in the range 1 to 999.99...
 	int whole = rint(floor(mant));
+	int pow_mul = (int) (pow(10.0, frac_precision));
 	int frac = rint((mant - floor(mant)) * pow(10.0, frac_precision));
+	if(frac >= pow_mul) {
+	  whole = whole + (frac / pow_mul);
+	  frac = frac % pow_mul;
+	}
 	ss << (is_neg ? '-' : ' ') << std::setw(3) << whole << separator << std::setfill('0') << std::setw(frac_precision) << frac << 'e' << ilog_10 ; 
       }
     }
