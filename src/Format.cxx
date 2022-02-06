@@ -37,15 +37,101 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
   char Format::separator = '.';
-  
-  Format::Format(const std::string & fmt_string) : 
-    orig_fmt_string(fmt_string), cur_arg_number(0) {
 
-    // turn all %% pairs into % and mark the position as *not* being the start
-    // of an insertion marker. 
-    initialScan(); 
+  Format::FmtStringSeg::FmtStringSeg(const std::string & str) {
+    seg_type = LITERAL;
+    val = str; 
+  }
+  
+  Format::FmtStringSeg::FmtStringSeg(unsigned int _idx) {
+    seg_type = FMT_VAL;
+    idx = _idx;
   }
 
+  Format::Format(const std::string & fmt_string) {
+    // save the format string
+    orig_fmt_string = fmt_string; 
+    // build the format list
+    initialScan(fmt_string);
+    // we're looking for the first argument
+    cur_arg_number = 0;
+  }
+
+
+  void Format::initialScan(const std::string & fmt_string) {
+    format_string_segments.clear();    
+    // scan the format string
+    enum ScanState { NORM, SAW_PC, ACC_FLDNUM };
+    ScanState s_state = NORM;
+
+    std::string cur_str;
+    unsigned int cur_fldnum = 0; 
+    for(auto c : fmt_string) {
+      switch (s_state) {
+      case NORM:
+	if(c == '%') {
+	  // we might be looking at a field specifier
+	  s_state = SAW_PC;
+	}
+	else {
+	  cur_str.push_back(c); 
+	}
+	break; 
+      case SAW_PC:
+	// are we looking at a field number?
+	if(isdigit(c)) {
+	  // we should push the current string
+	  if(!cur_str.empty()) {
+	    format_string_segments.push_back(FmtStringSeg(cur_str));
+	    cur_str.clear();
+	  }
+
+	  // and indicate that we're scanning for the rest of the field number
+	  s_state = ACC_FLDNUM; 
+	  cur_fldnum = (unsigned int) (c - '0');
+	}
+	else {
+	  // push a % and the current char onto the current string
+	  cur_str.push_back('%');
+	  // if the input was %%, we just send one %, otherwise, include the next char
+	  if(c != '%') cur_str.push_back(c);
+	  // and now we're normal
+	  s_state = NORM;
+	}
+	break; 
+      case ACC_FLDNUM:
+	if(isdigit(c)) {
+	  cur_fldnum = cur_fldnum * 10 + ((unsigned int) (c - '0'));
+	}
+	else {
+	  // we scanned an fld, now push the fmt specifier
+	  format_string_segments.push_back(FmtStringSeg(cur_fldnum));
+	  // set the state
+	  s_state = NORM;
+	  // clear the current string
+	  cur_str.clear();
+	  // and save the character
+	  cur_str.push_back(c); 
+	}
+	break; 
+      }
+    }
+
+    switch (s_state) {
+    case SAW_PC:
+      // we got to end-of-string with a % at the end.
+      cur_str.push_back('%');
+      // fall through. 
+    case NORM:
+      if(!cur_str.empty()) {
+	format_string_segments.push_back(FmtStringSeg(cur_str));
+      }
+      break;
+    case ACC_FLDNUM:
+      format_string_segments.push_back(FmtStringSeg(cur_fldnum));
+      break; 
+    }
+  }
 
   Format & Format::addI(int v, unsigned int w) {
     std::stringstream ss;
@@ -152,7 +238,7 @@ namespace SoDa {
     if(width > 0) {
       ss << std::setw(width);
     }
-    ss << v; 
+    ss << v;
     insertField(ss.str()); 
     return *this;     
   }
@@ -165,73 +251,45 @@ namespace SoDa {
   }
 
   void Format::insertField(const std::string & s) {
-    // scan the format string to find all the instances of "%n" where n is the current argument number.
-    if(cur_arg_number > max_field_num) {
-      std::stringstream ss;
-      ss << "Too many arguments (" << (cur_arg_number + 1) << ") passed to Format.";
-      throw BadFormat(ss.str(), *this);
-    }
-
-    // build a regular expression from the pattern number
-    std::stringstream fpat;
-    fpat << "(%" << cur_arg_number << ")\\D|(%" << cur_arg_number << ")$";
-    std::smatch m;
-    std::regex re(fpat.str());    
-
-
-    int pattern_length;
-
-    for(auto sri  = std::sregex_iterator(fmt_string.begin(), fmt_string.end(), re); 
-	sri != std::sregex_iterator(); 
-	++sri) {
-      std::smatch m = *sri; 
-
-      // which one did we match?
-      int midx = (m[1].length() != 0) ? 1 : 2;
-
-      int fpos = m.position();      
-      int pattern_length =  m[midx].length();
-
-      if(find(escape_positions.begin(), escape_positions.end(), fpos) == escape_positions.end()) {
-	fmt_string.replace(fpos, pattern_length, s);       	
+    for (auto & fld : format_string_segments) {
+      if((fld.seg_type == FmtStringSeg::FMT_VAL) && (fld.idx == cur_arg_number)) {
+	fld.val = s; 
+	fld.seg_type = FmtStringSeg::LITERAL; 
       }
     }
 
     cur_arg_number++;
   }
 
-  void Format::initialScan() {
-    int i, j;
-    max_field_num = -1; 
-    for(i = 0, j = 0; i < (orig_fmt_string.size() - 1); i++, j++) {
-      if(orig_fmt_string[i] == '%') {
-	if(orig_fmt_string[i+1] == '%') {
-	  escape_positions.push_back(fmt_string.size()); // This character in the fmt string is a literal '%'
-	  fmt_string.push_back('%');
-	  i++; // bump I an extra bit. 
-	}
-	else if(isdigit(orig_fmt_string[i+1])) {
-	  int fnum = atoi(orig_fmt_string.substr(i+1).c_str());
-	  if(fnum > max_field_num) max_field_num = fnum;
-	  fmt_string.push_back('%');	  
-	}
-      }
-      else {
-	fmt_string.push_back(orig_fmt_string[i]);
-      }
-    }
-    fmt_string.push_back(orig_fmt_string[orig_fmt_string.size() - 1]);
-
-  }
   
   Format & Format::reset() {
-    fmt_string = orig_fmt_string;
+    initialScan(orig_fmt_string);
     cur_arg_number = 0; 
     return *this;
   }
   
-  const std::string & Format::str(bool check_for_filled_out) const {
-    return fmt_string; 
+
+  std::string Format::str(bool check_for_filled_out) const {
+    std::string ret_string;
+    // assemble the string, warts and all
+    int unfilled_count = 0; 
+    for(auto & fld : format_string_segments) {
+      if(fld.seg_type == FmtStringSeg::LITERAL) {
+	ret_string = ret_string + fld.val;
+      }
+      else if(fld.seg_type == FmtStringSeg::FMT_VAL) {
+	std::stringstream ss;
+	ss << '%' << fld.idx;
+	ret_string = ret_string + ss.str();
+	unfilled_count++; 
+      }
+    }
+
+    if(check_for_filled_out && (unfilled_count != 0)) {
+      throw BadFormat("Unfilled argument string [" + ret_string + "]", *this);
+    }
+
+    return ret_string; 
   }
 
   double Format::roundToSigDigs(double v, int sig_digits) {
@@ -268,6 +326,6 @@ namespace SoDa {
 
 
 std::ostream & operator<<(std::ostream & os, const SoDa::Format & f) {
-  os << f.str(true);
+  os << f.str(false);
   return os; 
 }

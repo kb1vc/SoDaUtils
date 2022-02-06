@@ -450,9 +450,9 @@ namespace SoDa {
      * replaced, this method *may* throw a BadFormat exception. 
      * It doesn't yet. 
      * 
-     * @return a reference to the format string. 
+     * @return a string with everything that's been filled in so far.
      */
-    const std::string & str(bool check_for_filled_out = false) const; 
+    std::string str(bool check_for_filled_out = false) const; 
 
     /**
      * @brief the radix separator character. 
@@ -464,23 +464,38 @@ namespace SoDa {
      * 
      */
     static char separator; 
+
+  private:
+    // We need a privately declared class for fiddling with the format string.
+    class FmtStringSeg {
+    public:
+      enum SegType { LITERAL, FMT_VAL }; 
+      FmtStringSeg(const std::string & str); 
+      FmtStringSeg(unsigned int idx);
+
+      SegType seg_type; 
+      std::string val;
+      unsigned int idx; 
+    };
+
+    std::list<FmtStringSeg> format_string_segments;
     
   protected:
 
     double roundToSigDigs(double v, int sig_digits);
     
-    const std::string & getOrig() const { return orig_fmt_string; }
+    std::string orig_fmt_string;
     
-    std::string fmt_string;
-    std::string orig_fmt_string; 
+    const std::string & getOrig() const {
+      return orig_fmt_string; 
+    }
+    
     unsigned int cur_arg_number;
-    int max_field_num; 
 
-    std::list<size_t> escape_positions;
-
-    void initialScan(); 
+    void initialScan(const std::string & fmt_string); 
 
     void insertField(const std::string & s);
+
   }; 
 }
 

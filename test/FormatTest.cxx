@@ -51,7 +51,7 @@ int runBigTest() {
   
   double test_v = 64.0;
   std::string formats("esg");
-  int itcount = 50 ; // 100000; 
+  int itcount = 100000; 
   for(int i = 0; i < itcount; i++) {
     double test_iv = i; 
     for(double e = -18; e < 18; e++) {
@@ -60,9 +60,12 @@ int runBigTest() {
       for(int p = 0; p < 5; p++) {
 	for(int w = 0; w < 10; w++) {
 	  for(auto fmt : formats) {
-	    if(doTest(v, p, w, fmt) || doTest(iv, p, w, fmt)) {
+	    bool vt = false;
+	    bool ivt = false;
+	    if((vt = doTest(v, p, w, fmt)) || (ivt = doTest(iv, p, w, fmt))) {
 	      errcount++;
-	      std::cerr << "p = " << p << " w = " << w << " fmt = " << fmt << "\n";
+	      std::cerr << "vt = " << ((char) (vt ? 'T' : 'F')) << " ivt = " << ((char) (ivt ? 'T' : 'F')) << " ";
+	      std::cerr << "e = " << e << " v = " << v << " iv = " << iv << " p = " << p << " w = " << w << " fmt = " << fmt << "\n";
 	      if(errcount > 10) {
 		std::cerr << "Too many errors, time to quit.\n";
 		exit(-1);
@@ -83,6 +86,10 @@ int runBigTest() {
 }
 
 int main(int argc, char * argv[]) {
+
+  std::cerr << SoDa::Format("This is what 0 looks like [%0]\n")
+    .addF(0.0, 'e', 0, 0);
+  
   if(argc < 5) {
     runBigTest();
   }
