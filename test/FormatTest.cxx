@@ -51,7 +51,8 @@ int runBigTest() {
   
   double test_v = 64.0;
   std::string formats("esg");
-  for(int i = 0; i < 100000; i++) {
+  int itcount = 50 ; // 100000; 
+  for(int i = 0; i < itcount; i++) {
     double test_iv = i; 
     for(double e = -18; e < 18; e++) {
       double v = test_v * pow(10.0, e);
