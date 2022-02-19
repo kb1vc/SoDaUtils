@@ -233,13 +233,31 @@ namespace SoDa {
     return *this;     
   }
 
-  Format & Format::addS(const std::string & v, unsigned int width) {
-    std::stringstream ss;
-    if(width > 0) {
-      ss << std::setw(width);
+  Format & Format::addS(const std::string & v, int width) {
+    std::string fstr;
+    if(width < 0)  {
+      for(auto c : v) {
+	fstr.push_back(c);
+      }
+      int spaces = (- width) - v.size();
+      for(int i = 0; i < spaces; i++) {
+	fstr.push_back(' ');
+      }
+      insertField(fstr);      
     }
-    ss << v;
-    insertField(ss.str()); 
+    else if (width > 0) {
+      int spaces = width - v.size();
+      for(int i = 0; i < spaces; i++) {
+	fstr.push_back(' ');
+      }
+      for(auto c : v) {
+	fstr.push_back(c);
+      }
+      insertField(fstr);
+    }
+    else {
+      insertField(v);
+    }
     return *this;     
   }
 

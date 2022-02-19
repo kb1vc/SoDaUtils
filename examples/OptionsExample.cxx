@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
   std::string str_arg;
   std::vector<std::string> strvec_arg; 
   std::string kvp_arg;
-  
+
   //! [describe the command line]
   SoDa::Options cmd;  
   cmd
@@ -68,6 +68,8 @@ int main(int argc, char * argv[])
   if(!cmd.parse(argc, argv)) exit(-1);
   //! [parse it]
 
+  std::cerr << "SoDaUtils version [" << cmd.getVersion() << "]\n";
+  std::cerr << "SoDaUtils git id [" << cmd.getGitID() << "]\n";
   SoDa::Options kvp(true);  
   std::string val1, val2;
   int ival;

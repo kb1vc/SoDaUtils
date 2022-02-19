@@ -1,6 +1,6 @@
 #include "Options.hxx"
 #include "Utils.hxx"
-
+#include "Format.hxx"
 /*
 BSD 2-Clause License
 
@@ -55,15 +55,15 @@ namespace SoDa {
     }
 
     // now print the arguments
-    std::string prefix("");
-    if(!is_kvp) prefix = "--";
     for(auto ele : long_map) {
       auto arg_p = ele.second;
       if(is_kvp) {
 	os << "\t" << arg_p->long_name << "\t";
       }
       else {
-	os << "\t--" << arg_p->long_name << "\t-" << arg_p->ab_name << "\t";
+	os << SoDa::Format("   --%0 -%1     ")
+	  .addS(arg_p->long_name, -20)
+	  .addC(arg_p->ab_name); 
       }
       arg_p->printHelp(os);
       os << "\n";

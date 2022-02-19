@@ -1,4 +1,6 @@
 #pragma once
+#include "UtilsBase.hxx"
+
 /*
 BSD 2-Clause License
 
@@ -173,7 +175,7 @@ posargs =
    * @brief Command line parser class. 
    * 
    */
-  class Options {
+  class Options : public UtilsBase {
   public:
     /**
      * @brief constructor.  

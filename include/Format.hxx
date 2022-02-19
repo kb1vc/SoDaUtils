@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <list>
-
+#include "UtilsBase.hxx"
 /*
 BSD 2-Clause License
 
@@ -266,7 +266,7 @@ namespace SoDa {
      * may be outside of the C++11 definition.  LLVM warned about it loudly. 
      */
   
-  class Format {
+  class Format : public UtilsBase {
   public:
     /**
      * @brief create a format object with placeholders and all that stuff.
@@ -394,10 +394,11 @@ namespace SoDa {
      * left with spaces. 
      *
      * The default value for the width parameter will take up only 
-     * as much room as the value requires. 
+     * as much room as the value requires. If width is less than zero, 
+     * the field will be left justified, otherwise it is right justified.
      * 
      */
-    Format & addS(const std::string & v, unsigned int width = 0);
+    Format & addS(const std::string & v, int width = 0);
     
     /**
      * @brief insert a character into the format string

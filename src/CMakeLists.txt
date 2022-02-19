@@ -5,6 +5,7 @@ set(UTILS_SRCS
 	Split.cxx
 	Options.cxx
 	Format.cxx
+	UtilsBase.cxx
 	)
 
 
