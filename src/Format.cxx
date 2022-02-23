@@ -161,25 +161,133 @@ namespace SoDa {
     return *this;     
   }
   
-  Format & Format::addF(double v, char fmt, unsigned int width, unsigned int frac_precision) {
-    std::stringstream ss;    
+  int log1k(double v, double & v_norm, int sig_digs) {
+    int ret = 0;
+    v_norm = v; 
+    // round it first
+    double remul = 1.0; 
+    while(v_norm >= 10.0) {
+      v_norm = v_norm / 10.0;
+      remul = remul * 10.0;
+    }
+    while(v_norm < 1.0) {
+      v_norm = v_norm * 10.0;
+      remul = remul / 10.0;
+    }
+    // now create the round incr
+    double ri = 5;    
+    for(int s = 0; s < sig_digs; s++) {
+      ri = ri / 10.0;
+    }
+    // std::cerr << "ri = " << ri << " sig_digs " << sig_digs << "\n";
+    // now do the round-up add
+    v_norm += ri;
+    //std::cerr << "Now v_norm = " << v_norm << "\n";
+
+    // now restore v_norm to the original magnitude more or less
+    v_norm = v_norm * remul;
+
+    // ok, now take the log1k
+    if(v_norm < 1.0) {
+      while(v_norm < 1.0) {
+	ret -= 3; 
+	v_norm = v_norm * 1000.0; 
+      }
+    }
+    else {
+      while(v_norm > 1000.0) {
+	ret += 3; 
+	v_norm = v_norm / 1000.0; 
+      }
+    }
+    return ret; 
+  }
+
+  int getIntPartWidth(double v) {
+    int ret = 0; 
+    while(v > 1.0) {
+      v = v / 10.0; 
+      ret++; 
+    }
+    return ret; 
+  }
+  
+  void fractionate(double v, unsigned int significant_digits, 
+		   int & int_part, int & frac_part,
+		   int & int_wid, int & frac_wid) {
+    // v is in the range 1 to 1000 - epsilon. 
+    // How many digits did it take up?
+    int_wid = getIntPartWidth(v); 
+
+    // get fractional and int parts.
+    double dfrac_part, dint_part;
+    dfrac_part = modf(v, &dint_part); 
     
+    //std::cerr << "dint_part " << dint_part << " dfrac_part " << dfrac_part 
+    //	      << "\n";
+    int_part = (int) dint_part;
+    //std::cerr << "int_part " << int_part << "\n";
+    
+    // now we need to zap off any integer parts
+    // if we don't have enough significant digits.
+    int modval = 1;
+    int iw = int_wid;
+    while(iw > significant_digits) {
+      modval = modval * 10; 
+      iw--;
+    }
+
+    //std::cerr << " int_part " << int_part << " vs modval " << modval;
+    int_part = int_part - (int_part % modval);      
+    //std::cerr << " gets us " << int_part << "\n";
+    
+    //std::cerr << "dfrac_part " << dfrac_part  << "\n";
+    // now trim the fractional part. 
+    frac_wid = 0; frac_part = 0;
+    int sd_left = significant_digits - iw;
+    //std::cerr << "sd_left = " << sd_left << "\n";
+    while(sd_left > 0) {
+      dfrac_part = dfrac_part * 10.0;
+      //std::cerr << "New dfrac_part " << dfrac_part << " floor(dfp) " << floor(dfrac_part) 
+      //		<< " frac_part " << frac_part << "\n";
+      frac_part = 10 * frac_part + floor(dfrac_part);
+      double junk;
+      dfrac_part = modf(dfrac_part, &junk);
+      //std::cerr << "new frac_part " << frac_part 
+      //		<< " dfrac_part " << dfrac_part
+      //	<< " trunc(df_p) " << trunc(dfrac_part)
+      //	<< "\n";
+      frac_wid++;
+      sd_left--;
+    }
+  }
+  
+  Format & Format::addF(double v, char fmt, unsigned int width, unsigned int significant_digits) {
+    std::stringstream ss;    
+    //std::cerr << "v = " << v << " width = " << width 
+    //	      << " significant_digits = " << significant_digits
+    //	      << "\n";
+    ss << std::left << std::setfill(' ');
+
+    if(width == 0) {
+      width = significant_digits + 4;
+    }
     switch (fmt) {
     case 'f':
       // fixed floating point format
       if(width) ss << std::setw(width); 
-      ss << std::fixed << std::setprecision(frac_precision) << v;  
+      ss << std::fixed << std::setprecision(significant_digits) << v;  
       break; 
     case 's':
       // scientific (who cares what the exponent is? format)
       if(width) ss << std::setw(width);       
-      ss << std::scientific << std::setprecision(frac_precision) << v;
+      ss << std::scientific << std::setprecision(significant_digits) << v;
       break; 
     case 'g':
       // general (who cares what the exponent is format, or how this looks)
       ss.unsetf(std::ios::fixed | std::ios::scientific);
       if(width) ss << std::setw(width);             
-      ss << std::setprecision(frac_precision) << v;  				    
+      ss << std::setprecision(significant_digits) << v;
       break; 
     case 'e':
       // now this is a tough one.
@@ -191,41 +299,56 @@ namespace SoDa {
 
       // it is possible that the value is 0.  if so, just jump skip the rest of this.
       if(v == 0.0) {
-	ss << "   0" << separator << std::setw(frac_precision) << std::setfill('0') << 0 << "e0";
+	//std::cerr << "Got zero " << v << "\n";
+	ss << "0" << separator << std::left 
+	   << std::setw(significant_digits - 1) << std::setfill('0') << 0 << "e0";
       }
       else {
-	// get the sign
-	bool is_neg = (v < 0.0);
-	
+	// get the abs val
+	//std::cerr << "Got v = " << v << "\n";
 	double av = fabs(v);
-	// first find the log base 10.	
-	double log_10 = log10(av);
-	// now remember the sign
-	double exp_sign_cor = (log_10 < 0.0) ? -1.0 : 1.0; 
-	// truncate it toward 0
-	log_10 = floor(fabs(log_10));
-	double scale = pow(10, -1.0 * exp_sign_cor * log_10);
-	// scale the "mantissa" part
-	double mant = av * scale; 
-	// now get the integer version of the exponent
-	int ilog_10 = rint(log_10);
-	// now we want to adjust ilog_10 until it is a multiple of 3
-	// we're always going to *decrease* the exponent, so we should
-	// always multiply the mantissa by 10
-	ilog_10 = ilog_10 * ((exp_sign_cor < 0.0) ? -1 : 1);
-	while(((ilog_10 % 3) != 0) || (mant < 1.0)) {
-	  mant = 10.0 * mant;
-	  ilog_10 -= 1;
+	// now get the log base 1000
+	// That's probably going to be our
+	// exponent. (Unless the fractional part
+	// rolls over.) We also normalize to
+	// a value in the range 1 to 1000
+	double av_norm; 
+	int exp_val = log1k(av, av_norm, significant_digits);
+	//std::cerr << "av_norm " << av_norm << " exp_val " << exp_val << "\n";
+	// now do the fraction and rounding
+	int frac_part, int_part, int_wid, frac_wid;
+	fractionate(av_norm, significant_digits,
+		    int_part, frac_part, 
+		    int_wid, frac_wid);
+	//std::cerr << "int_part " << int_part << " frac_part " << frac_part
+	//<< " int_wid " << int_wid << " frac_wid " << frac_wid
+	//	  << "\n";
+	// now print the sign
+	ss << ((v < 0) ? '-' : ' ');
+	// and the integer part
+	ss << std::setw(int_wid) << int_part;
+	// if we have no significant fraction digits,
+	// leave them off.
+	if(frac_wid > 0) {
+	  ss << '.' << std::setw(frac_wid) << std::right 
+	     << std::setfill('0') << frac_part;
 	}
-	// now we have a mantissa in the range 1 to 999.99...
-	int whole = rint(floor(mant));
-	int pow_mul = (int) (pow(10.0, frac_precision));
-	int frac = rint((mant - floor(mant)) * pow(10.0, frac_precision));
-	if(frac >= pow_mul) {
-	  whole = whole + (frac / pow_mul);
-	  frac = frac % pow_mul;
+	// now the exponent
+
+	ss << std::setw(1) << 'e'
+	   << std::setfill(' ') << std::left; 
+	if(exp_val < 0) {
+	  ss << '-' << std::setw(2) << -exp_val;
 	}
-	ss << (is_neg ? '-' : ' ') << std::setw(3) << whole << separator << std::setfill('0') << std::setw(frac_precision) << frac << 'e' << ilog_10 ; 
+	else {
+	  ss << '+'  << std::setw(2) << exp_val;	  
+	}
+	// now fill the rest of the field;
+	int fill_wid = width - (int_wid + frac_wid + 4); 
+	while(fill_wid > 0) {
+	  ss << ' ';
+	  fill_wid--;
+	}
       }
     }
 

@@ -313,8 +313,9 @@ namespace SoDa {
      * @param v the double precision value (floats will be promoted)
      * @param fmt a choice of representations (see below)
      * @param width the minimum width of the field. 
-     * @param frac_precision the number of decimal positions to the
-     * right of the radix point. 
+     * @param significant_digits the number of significant digits
+     * to print. (An attempt is made for f, s, and g -- This is 
+     * particularly useful (and tested) for e formats.)
      * @return a reference to this SoDa::Format object to allow 
      * chaining of method invocations. 
      * 
@@ -340,7 +341,7 @@ namespace SoDa {
      * C++ stream "std::scientific" format.  The width parameter sets
      * the minimum field width, and the frac_precision parameter
      * determines the number of places to the right of the radix point. 
-     * THe number will be represented as a floating string value in the
+     * The number will be represented as a floating string value in the
      * range 1.0 to 1.999999999...999 followed by an exponent specifier
      * like "e+" or "e-" followed by one or more digits. 
      * 
@@ -368,16 +369,18 @@ namespace SoDa {
      * those who think in Peta, Tera, Giga, Mega, kilo, milli, micro, nano, 
      * and pico.  Those left in the CGS world can write their own code. 
      * 
-     * The width parameter is ignored.  The field width is determined by 
-     * the fmt choice and the frac_precision. The field contain a leading
-     * sign, up to three decimal digits, a radix point, frac_precision digits, 
-     * "e+" or "e-" and one or more exponent digits. 
-     * 
-     * The leading (whole) part of the value will be padded with spaces
-     * to the left of the sign. 
+     * The minimum field width is determined by 
+     * the number of significant digits. The field contain a leading
+     * sign, up to three decimal digits, a radix point, the fraction digits, 
+     * "e+" or "e-" and one or more exponent digits.  The sum of the number
+     * of integer and fraction digits is equal to the significant_digits value. 
+     * The resulting string will be padded out to width (if it is larger
+     * than significan_digits + 2 (for the sign and exp sign) + 1 (for the
+     * '.' if necessary) + (1 or 2 based on the width of the exponent).
+     * Padding leaves the value left-justified in the field.
      * 
      */
-    Format & addF(double v, char fmt = 'f', unsigned int width = 0, unsigned int frac_precision = 3);
+    Format & addF(double v, char fmt = 'f', unsigned int width = 0, unsigned int significant_digits = 6);
 
     /**
      * @brief insert a string into the format string
