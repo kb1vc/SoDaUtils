@@ -1,6 +1,5 @@
 #pragma once
 #include "UtilsBase.hxx"
-
 /*
 BSD 2-Clause License
 
@@ -42,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iomanip>
 #include <vector>
 #include <list>
+#include <exception>
 #include <stdexcept>
 #include <functional>
 #include <algorithm>

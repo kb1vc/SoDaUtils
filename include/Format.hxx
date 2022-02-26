@@ -250,7 +250,7 @@ namespace SoDa {
      * SoDa::Format methods don't return success/failure values to distinguish
      * between good outcomes and errors.  If something goes wrong that 
      * SoDa::Format feels bad about, it will throw a SoDa::Format::BadFormat
-     * exception.  This inherits from "std::runtime_exception" so it is 
+     * exception.  This inherits from "std::runtime_error" so it is 
      * moderately well behaved. 
      * 
      * SoDa::Format uses exceptions because, after years of reading my code
