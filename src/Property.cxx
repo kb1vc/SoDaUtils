@@ -38,6 +38,10 @@ namespace SoDa {
   Property::Value::Value(const std::string value) : value(value) {
   }
 
+  std::list<std::string> cdr(std::list<std::string> & l) {
+    return std::list<std::string>{std::next(l.begin()), l.end()};
+  }
+
   std::ostream & operator<<(std::ostream & os, std::list<std::string> l) {
     bool first = true; 
     for(auto a : l) {
@@ -245,9 +249,10 @@ namespace SoDa {
   
   std::shared_ptr<Property> Property::getProperty(std::list<std::string> & path_list,
 						  bool throw_exception) {
-    auto name = path_list.front(); path_list.pop_front();
-      
-    if(path_list.size() == 0) {
+
+    auto name = path_list.front();       
+
+    if(path_list.size() == 1) {
       // we're looking for the child
       if(children.count(name) == 0) {	
 	if(throw_exception) throw Property::BadPathException(this, name);
@@ -259,7 +264,8 @@ namespace SoDa {
     }
     else {
       // we have more to chase
-      return getProperty(path_list, throw_exception);
+      auto rest = cdr(path_list);
+      return getProperty(rest, throw_exception);
     }
   }
 
@@ -271,7 +277,7 @@ namespace SoDa {
       return shared_from_this();
     }
     else {
-      auto cname = path_list.front(); path_list.pop_front();
+      auto cname = path_list.front();
       
       // are do we need to create an intermediate path node? 
       if(children.count(cname) == 0) {
@@ -282,7 +288,8 @@ namespace SoDa {
       }
       
       // now I've got a child at cname (one way or the other)
-      return children[cname]->createPath(path_list);
+      auto rest = cdr(path_list);
+      return children[cname]->createPath(rest);
     }
   }
 

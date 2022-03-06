@@ -8,7 +8,7 @@ int main(int argc, char * argv[]) {
   
   ptree->addProperty(SoDa::makeProperty("Flintstones", ""));
 
-  ptree->addProperty(SoDa::makeProperty("Barney", "Dad"), "/Neighbors/Rubbles/Barney");
+  ptree->addProperty(SoDa::makeProperty("Barney", "Dad"), "/Neighbors/Rubbles");
 
   ptree->print(std::cout, "   ");
 }
