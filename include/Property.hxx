@@ -36,7 +36,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @file Property.hxx
  * @author Matt Reilly (kb1vc)
- * @date December 31, 2020
+ * @date Mar 6, 2022
+ *
+ * Contains types defining property holders and values for property trees. 
+ * 
+ * Note this file contains multiple class definitions. To do otherwise
+ * would really clutter up the header files. 
  */
 
 namespace SoDa {
@@ -46,32 +51,73 @@ namespace SoDa {
   public: 
     Property(const std::string name, const std::string value);
   
-    class Value {
+    /**
+     *
+     * The place where we store the content of an attribute/property
+     *
+     * Property values may be of string, or numeric type. String values
+     * are parsed as long values, if possible, otherwise as doubles, then 
+     * as bool (either 'T' or 'F') and finaly we give up and call it a string. 
+     *
+     * In parsing long, double, or bool, the input string is split and trimmed. 
+     * If there is more than one element in the split list, then this value is
+     * a string. 
+     * 
+     * A get method on a numeric property can be used to get a long or a double. 
+     * All get string operations return the original string. 
+     */
+    class Value : public std::enable_shared_from_this<Property::Value> {
       // stored property value
     public:
-      Value(const std::string value = std::string("")); 
-      
-      bool getL(long & v, bool throw_exception = false) const;
-      
-      bool getUL(unsigned long & v, bool throw_exception = false) const;
-      
-      bool getD(double & v, bool throw_exception = false) const;
-      
-      std::string getS(bool throw_exception = false) const;
+      enum PrimitiveType { LONG, DOUBLE, BOOL, STRING, OTHER };
 
-      std::string value;
+      Value(const std::string value = std::string(""));
+      Value(long v);
+      Value(double v);
+      Value(bool v);
+      
+      bool get(long & v, bool throw_exception = false) const;
+      bool get(double & v, bool throw_exception = false) const;
+      bool get(std::string & v, bool throw_exception = false) const;
+      bool get(bool & v, bool throw_exception = false) const;
+      std::string getRaw(); 
+
+      void set(const std::string & v);
+      void set(long v);
+      void set(double v);
+      void set(bool v);
+      
+      std::string str_value;
+      double dv; 
+      long lv; 
+      bool bv; 
+      PrimitiveType vtype;
+      
+      std::shared_ptr<Value> get();
+
+      std::ostream & print(std::ostream & os) const;
+      
+      friend std::ostream & operator<<(std::ostream & os, const Value & v);
+      friend std::ostream & operator<<(std::ostream & os, std::shared_ptr<Value> vp);      
+      
+    protected:
+      static std::map<std::string, bool>  initBooleanMap();
+
+      static std::map<std::string, bool> boolean_map; 
     }; 
     
-    bool getL(long & v, bool throw_exception = false) const;
+    bool get(long & v, bool throw_exception = false) const;
+    bool get(double & v, bool throw_exception = false) const;
+    bool get(bool & v,  bool throw_exception = false) const;
+    bool get(std::string & v, bool throw_exception = false) const;
+
+    void set(const std::string & v);
+    void set(long v);
+    void set(double v);
+    void set(bool v);
+      
+    std::shared_ptr<Value> get();  
     
-    bool getUL(unsigned long & v, bool throw_exception = false) const;
-
-    bool getD(double & v, bool throw_exception = false) const;
-
-    std::string getS(bool throw_exception = false) const;
-
-    void setValue(const std::string & v);
-
     std::shared_ptr<Property> addChild(std::shared_ptr<Property> child, 
 				       bool merge_property = false);
 
@@ -102,7 +148,7 @@ namespace SoDa {
 
     std::shared_ptr<Property> getParent() const;
 
-    void addAttribute(const std::string name, const std::string value);
+    void setAttribute(const std::string name, const std::string value);
 
     const std::list<std::string> & getAttributeNames() const;
 
@@ -181,4 +227,5 @@ namespace SoDa {
 }
     
 std::ostream & operator<<(std::ostream & os, const SoDa::Property & p);
-
+std::ostream & operator<<(std::ostream & os, const SoDa::Property::Value & v);
+std::ostream & operator<<(std::ostream & os, const std::shared_ptr<SoDa::Property::Value> vp); 

@@ -1,7 +1,8 @@
 #include "Property.hxx"
 #include <sstream>
 #include "Utils.hxx"
-
+#include <cmath>
+#include <iomanip>
 /*
 BSD 2-Clause License
 
@@ -35,7 +36,30 @@ namespace SoDa {
 
   Property::Value Property::null_value;
   
-  Property::Value::Value(const std::string value) : value(value) {
+  std::map<std::string, bool> Property::Value::boolean_map = Property::Value::initBooleanMap();
+
+  std::map<std::string, bool> Property::Value::initBooleanMap() {
+    std::map<std::string, bool> new_map; 
+    std::string truestring("TRUE/True/T/1/true");
+    std::string falsestring("FALSE/False/false/f/0");
+
+    std::cerr << "In initBooleanMap with truestring " << truestring << "\n";
+    
+    auto tv = SoDa::split(truestring, "/");
+    auto fv = SoDa::split(falsestring, "/");    
+    
+    for(const auto & v : tv) {
+      std::cerr << "Adding true value " << v << "\n";
+      new_map[v] = true; 
+    }
+    for(const auto & v : fv) {
+      new_map[v] = false;
+    }
+    return new_map;
+  }
+
+  Property::Value::Value(const std::string value) : str_value(value) {
+    set(value);
   }
 
   std::list<std::string> cdr(std::list<std::string> & l) {
@@ -52,42 +76,153 @@ namespace SoDa {
     return os; 
   }
 
-  template<typename T> bool translate(const std::string v, T & rv, 
-				      bool throw_exception,
-				      const std::string tname) {
-    std::istringstream ss(v);
-    bool retval; 
-    if(ss >> rv) {
-      retval = !(ss.fail());
+  bool Property::Value::get(long & v, bool throw_exception) const {
+    if((vtype == LONG) || (vtype == DOUBLE)) {
+      v = lv;
     }
     else {
-      retval = true; 
+      if(throw_exception) {
+	throw Property::GetValueException("long", str_value);
+      }
+      else {
+	return false; 
+      }
+    }
+    return true; 
+  }
+
+  bool Property::Value::get(double & v, bool throw_exception) const {
+    if((vtype == LONG) || (vtype == DOUBLE)) {
+      v = dv;
+    }
+    else {
+      if(throw_exception) {
+	throw Property::GetValueException("double", str_value);
+      }
+      else {
+	return false; 
+      }
+    }
+    return true;     
+  }
+
+  bool Property::Value::get(bool & v, bool throw_exception) const {
+    if(vtype == BOOL) {
+      v = bv;
+    }
+    else {
+      if(throw_exception) {
+	throw Property::GetValueException("bool", str_value);
+      }
+      else {
+	return false; 
+      }
+    }
+    return true;     
+  }
+
+  bool Property::Value::get(std::string & v, bool throw_exception) const {
+    v = str_value; 
+    return true; 
+  }
+
+  
+  void Property::Value::set(const std::string & v) {
+    if(Property::Value::boolean_map.size() == 0) {
+      initBooleanMap();
     }
 
-    if(throw_exception && !retval) {
-      throw Property::GetValueException(tname, v);
-    }
+    auto v_lis = SoDa::split(v, ", /");
+    if(v_lis.size() != 1) return;
+
+    auto trval = v_lis.front();
+    trval = SoDa::squashSpaces(trval);
     
-    return retval;
+    // is it a bool? 
+    if(boolean_map.count(trval) != 0) {
+      set(boolean_map[trval]); 
+      return; 
+    }
+
+    // Now it must be numeric (double or long) or a string. 
+    {
+      // check for double
+      std::istringstream is;       
+      if(is >> dv) {
+	if(!is.fail()) {
+	  set(dv);
+	  return; 
+	}
+      }
+    }
+    {
+      // check for long
+      std::istringstream is;       
+      if(is >> lv) {
+	if(!is.fail()) {
+	  set(lv);
+	  return; 
+	}
+      }
+    }
+
+    // Here's where we'd check for an extended type...
+    
+    // if we got here, it is just a string. 
+    vtype = STRING; 
   }
 
-  bool Property::Value::getL(long & v, bool throw_exception) const {
-    return translate<long>(value, v, throw_exception, "long");
+  void Property::Value::set(long v) {
+    vtype = LONG;
+    lv = v; 
+    dv = double(lv);
   }
 
-  bool Property::Value::getUL(unsigned long & v, bool throw_exception) const {
-    return translate<unsigned long>(value, v, throw_exception, "unsigned long");
+  void Property::Value::set(double v) {
+    vtype = DOUBLE;
+    dv = v; 
+    lv = lround(dv);
+  }
+  
+  void Property::Value::set(bool v) {
+    vtype = BOOL;
+    bv = v; 
+  }    
+
+  std::shared_ptr<Property::Value> Property::Value::get() {
+    return shared_from_this();
   }
 
-  bool Property::Value::getD(double & v, bool throw_exception) const {
-    return translate<double>(value, v, throw_exception, "double");
+  std::ostream & Property::Value::print(std::ostream & os) const {
+    int old_width = os.width();
+    int old_precision = os.precision();
+    switch (vtype) {
+    case LONG:
+      os << lv; 
+      break; 
+    case DOUBLE:
+      os << std::setprecision(std::numeric_limits<double>::max_digits10 + 1);
+      os << dv; 
+      break; 
+    case BOOL:
+      if(bv) {
+	os << "True"; 
+      }
+      else {
+	os << "False";
+      }
+      break; 
+    case STRING: 
+      os << str_value; 
+      break; 
+    default: 
+      break; 
+    }
+    os.width(old_width); 
+  os.precision(old_precision);
+
+    return os; 
   }
-
-
-  std::string Property::Value::getS(bool throw_exception) const {
-    return value; 
-  }
-
   
   Property::Property(const std::string name, const std::string value) : 
     name(name), value(Value(value))
@@ -95,36 +230,43 @@ namespace SoDa {
     parent = nullptr; 
   }
   
-  bool Property::getL(long & v, bool throw_exception) const {
-    return value.getL(v, throw_exception);
+  bool Property::get(long & v, bool throw_exception) const {
+    return value.get(v, throw_exception);
   }
 
-  bool Property::getUL(unsigned long & v, bool throw_exception) const {
-    return value.getUL(v, throw_exception);    
-  }
 
-  bool Property::getD(double & v, bool throw_exception) const {
-    return value.getD(v, throw_exception);        
+  bool Property::get(double & v, bool throw_exception) const {
+    return value.get(v, throw_exception);        
   }
 
   
-  std::string Property::getS(bool throw_exception) const {
-    return value.getS(throw_exception);
+  bool Property::get(bool & v, bool throw_exception) const {
+    return value.get(v, throw_exception);
   }
 
+  bool Property::get(std::string & v, bool throw_exception) const {
+    return value.get(v, throw_exception);
+  }
+
+  void Property::set(const std::string & v) {
+    value.set(v);
+  }
+
+  void Property::set(long v) {
+    value.set(v);
+  }
+
+  void Property::set(double v) {
+    value.set(v);
+  }
+
+  void Property::set(bool v) {
+    value.set(v);
+  }
   
-  std::string buildPath(std::list<std::string> plist) {
-    std::string ret;
-    for(auto v : plist) {
-      std::cerr << "plist el " << v << "\n";
-    }
-    for(auto v : plist) {
-      ret = ret + "/" + v;
-      std::cerr << "ret = \"" << ret << "\"\n";      
-    }
-    return ret; 
+  std::shared_ptr<Property::Value> Property::get() { 
+    return value.get(); 
   }
-
   std::shared_ptr<Property> Property::addChild(std::shared_ptr<Property> child, 
 					       bool merge_property) {
     auto cname = child->name; 
@@ -203,10 +345,6 @@ namespace SoDa {
     return parent_p->addChild(prop, merge_property); 
   }  
 
-  void Property::setValue(const std::string & v) {
-    value = v; 
-  }
-
   void Property::setParent(std::shared_ptr<Property> p) {
     parent = p; 
   }
@@ -215,9 +353,11 @@ namespace SoDa {
     return parent; 
   }
 
-  void Property::addAttribute(const std::string name, const std::string value) {
-    attribute_names.push_back(name); 
-    attributes[name] = Value(value); 
+  void Property::setAttribute(const std::string name, const std::string value) {
+    if(attributes.count(name) == 0) {
+      attribute_names.push_back(name); 
+    }
+    attributes[name] = Value(value);     
   }
 
   const std::list<std::string> & Property::getAttributeNames() const {
@@ -305,11 +445,13 @@ namespace SoDa {
 
 
   std::ostream & Property::print(std::ostream & os, const std::string indent) const {
-    os << indent << "Name: \"" << name << "\"  Value \"" << value.getS() << "\"\n";
+    os << indent << "Name: \"" << name << "\"  Value \"" ;
+    value.print(os) << "\"\n";
     std::string my_indent = indent + "    ";
 
     for(auto & a : attributes) {
-      os << my_indent << "Attribute: \"" << a.first << "\" Value \"" << a.second.getS() << "\"\n";
+      os << my_indent << "Attribute: \"" << a.first << "\" Value \""; 
+      a.second.print(os) << "\"\n";
     }
     
     for(auto & c : children) {
@@ -330,4 +472,12 @@ namespace SoDa {
 
 std::ostream & operator<<(std::ostream & os, const SoDa::Property & p) {
   return p.print(os, "");
+}
+
+std::ostream & operator<<(std::ostream & os, const SoDa::Property::Value & v) {
+  return v.print(os);
+}
+
+std::ostream & operator<<(std::ostream & os, std::shared_ptr<SoDa::Property::Value>  vp) {
+  return vp->print(os);
 }
