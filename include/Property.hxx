@@ -49,7 +49,16 @@ namespace SoDa {
   
   class Property : public std::enable_shared_from_this<Property> {
   public: 
-    Property(const std::string name, const std::string value);
+    class Value; 
+    Property(const std::string name, 
+	     const std::string value, 
+	     std::shared_ptr<Property> parent = nullptr);
+    Property(const std::string name, 
+	     const Property::Value & v, 
+	     std::shared_ptr<Property> parent = nullptr);
+    Property(const std::string name, 
+	     std::shared_ptr<Property> parent = nullptr);
+    Property(std::shared_ptr<Property> parent = nullptr); 
   
     /**
      *
@@ -105,6 +114,8 @@ namespace SoDa {
 
       static std::map<std::string, bool> boolean_map; 
     }; 
+
+
     
     bool get(long & v, bool throw_exception = false) const;
     bool get(double & v, bool throw_exception = false) const;
@@ -216,7 +227,7 @@ namespace SoDa {
 
   class PropertyTree : public Property {
   public:
-    PropertyTree() : Property("", "") { }
+    PropertyTree() : Property("") { }
   };
 
 

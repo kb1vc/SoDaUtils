@@ -6,7 +6,7 @@
 /*
 BSD 2-Clause License
 
-Copyright (c) 2020, Matt Reilly - kb1vc
+Copyright (c) 2022, Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,23 @@ namespace SoDa {
   Property::Value::Value(const std::string value) : str_value(value) {
     set(value);
   }
+  Property::Value::Value(bool value)  {
+    set(value);
+    str_value = value ? "T" : "F";
+    
+  }
 
+  Property::Value::Value(double value) {
+    str_value = "";
+    set(value);
+  }
+
+  Property::Value::Value(long value) {
+    str_value = "";    
+    set(value);
+  }
+
+  
   std::list<std::string> cdr(std::list<std::string> & l) {
     return std::list<std::string>{std::next(l.begin()), l.end()};
   }
@@ -131,15 +147,22 @@ namespace SoDa {
     if(Property::Value::boolean_map.size() == 0) {
       initBooleanMap();
     }
-
+    std::cerr << "In property value set with [" << v << "]\n";
     auto v_lis = SoDa::split(v, ", /");
-    if(v_lis.size() != 1) return;
+    
+    for(auto v : v_lis) {
+      std::cerr << "..." << v << "\n";
+    }
 
+    if(v_lis.size() != 1) return;
+    
+    
     auto trval = v_lis.front();
     trval = SoDa::squashSpaces(trval);
     
     // is it a bool? 
     if(boolean_map.count(trval) != 0) {
+      std::cerr << "It was a bool...\n";
       set(boolean_map[trval]); 
       return; 
     }
@@ -147,20 +170,22 @@ namespace SoDa {
     // Now it must be numeric (double or long) or a string. 
     {
       // check for double
-      std::istringstream is;       
+      std::istringstream is(v);       
       if(is >> dv) {
 	if(!is.fail()) {
 	  set(dv);
+	  std::cerr << "It was a double...\n";	  
 	  return; 
 	}
       }
     }
     {
       // check for long
-      std::istringstream is;       
+      std::istringstream is(v);       
       if(is >> lv) {
 	if(!is.fail()) {
 	  set(lv);
+	  std::cerr << "It was a long...\n";	  	  
 	  return; 
 	}
       }
@@ -169,7 +194,8 @@ namespace SoDa {
     // Here's where we'd check for an extended type...
     
     // if we got here, it is just a string. 
-    vtype = STRING; 
+    vtype = STRING;
+    str_value =v; 
   }
 
   void Property::Value::set(long v) {
@@ -224,12 +250,32 @@ namespace SoDa {
     return os; 
   }
   
-  Property::Property(const std::string name, const std::string value) : 
-    name(name), value(Value(value))
+  Property::Property(const std::string name, 
+		     const std::string value, 
+		     std::shared_ptr<Property> parent) : 
+    name(name), value(Value(value)), parent(parent)
   {
-    parent = nullptr; 
+  }
+
+  Property::Property(const std::string name, 
+		     const Property::Value & v,
+		     std::shared_ptr<Property> parent) : 
+    name(name), 
+    value(v), 
+    parent(parent) 
+  {
+  }
+
+  Property::Property(const std::string name, 
+		     std::shared_ptr<Property> parent) : 
+    name(name), parent(parent) 
+  {
   }
   
+  Property::Property(std::shared_ptr<Property> parent) :
+    name(""), value(Value("")), parent(parent)  {
+  }    
+
   bool Property::get(long & v, bool throw_exception) const {
     return value.get(v, throw_exception);
   }
@@ -249,6 +295,7 @@ namespace SoDa {
   }
 
   void Property::set(const std::string & v) {
+    std::cerr << "In property set with [" << v << "]\n";
     value.set(v);
   }
 

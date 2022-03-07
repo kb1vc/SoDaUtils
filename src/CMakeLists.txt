@@ -6,6 +6,7 @@ set(UTILS_SRCS
 	Options.cxx
 	Format.cxx
 	Property.cxx
+	PropertyIO_JSON.cxx
 	)
 
 

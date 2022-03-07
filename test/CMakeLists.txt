@@ -10,4 +10,5 @@ set(TST_FMT_SRCS
 
 add_executable(FormatTest ${TST_FMT_SRCS})
 
-add_executable(PropertyTest ../src/Property.cxx PropertyTest.cxx ../src/Split.cxx)
+add_executable(PropertyTest ../src/Property.cxx PropertyTest.cxx ../src/Split.cxx 	../src/PropertyIO_JSON.cxx)
+
