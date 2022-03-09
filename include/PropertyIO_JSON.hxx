@@ -43,12 +43,19 @@ namespace SoDa {
 
     std::shared_ptr<Property> read(std::istream & is);
 
-    void write(std::shared_ptr<Property> p, const std::string & out_filename);
+    void write(const std::shared_ptr<Property> & p, const std::string & out_filename);
 
-    void write(std::shared_ptr<Property> p, std::ostream & os);
+    void write(const std::shared_ptr<Property> & p, std::ostream & os);
 
   protected:
 
-    std::shared_ptr<Property> prop_tree; 
+    void privateWrite(const std::shared_ptr<Property> & p, std::ostream & os, 
+		      bool prefix_comma = false, bool is_outer = false);    
+
+    std::ostream &  printPrefixSpaces(std::ostream & os); 
+
+    std::shared_ptr<Property>  prop_tree; 
+    
+    int depth; 
   };
 }

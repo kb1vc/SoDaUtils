@@ -30,13 +30,10 @@ namespace SoDa {
       // we get here because we're setting a value.
       // we should have seen the key by now.
       auto cur_prop = property_stack.top();
-      std::cerr << "In setVal with value [" << T(v) << "]\n";
       cur_prop->set(T(v));
       // now pop the stack.
       property_stack.pop();
       // how does it look?
-      std::cerr << "setVal Popped stack.. now: \n";
-      prop_tree->print(std::cerr, "..");
       return true; 
     }
 
@@ -63,7 +60,6 @@ namespace SoDa {
     // called when a string is parsed; value is passed and can be
     // safely moved away
     bool string(json::string_t& val)  {
-      std::cerr << "got string [" << val << "]\n";
       return setVal<json::string_t, std::string>(val);            
     }
 
@@ -84,8 +80,6 @@ namespace SoDa {
     bool end_object() {
       // pop the stack. 
       property_stack.pop();
-      std::cerr << "end object Popped stack.. now: \n";
-      prop_tree->print(std::cerr, "..");
       return true; 
     }
   
@@ -101,7 +95,6 @@ namespace SoDa {
     // called when an object key is parsed; value is passed and can be safely moved away
     bool key(json::string_t& val) {
       // each time we see a key, we create a new property
-      std::cerr << "Got key [" << val << "]\n";
       auto cur_prop = property_stack.top();
       auto new_prop = std::make_shared<SoDa::Property>(std::string(val), cur_prop);
       cur_prop->addChild(new_prop);
@@ -123,6 +116,7 @@ namespace SoDa {
 
 
   PropertyIO_JSON::PropertyIO_JSON() {
+    depth = 0; 
   }
     
   std::shared_ptr<Property> PropertyIO_JSON::read(const std::string & in_filename) {
@@ -143,11 +137,62 @@ namespace SoDa {
     return prop_tree; 
   }
 
-  void PropertyIO_JSON::write(std::shared_ptr<Property> p, const std::string & out_filename) {
-      return; 
-    }
+  void PropertyIO_JSON::write(const std::shared_ptr<Property> & p, const std::string & out_filename) {
+    std::ofstream os(out_filename);
+    write(p, os); 
+    return; 
+  }
 
-  void PropertyIO_JSON::write(std::shared_ptr<Property> p, std::ostream & os) {
-      return; 
+  void PropertyIO_JSON::write(const std::shared_ptr<Property> & p, std::ostream & os) {
+    privateWrite(p, os, false, true);
+    os << "\n";
+    return; 
+  }
+
+  void PropertyIO_JSON::privateWrite(const std::shared_ptr<Property> & p, std::ostream & os, bool prefix_comma, bool is_outer) {
+    if(!is_outer) {
+      if(prefix_comma) os << ",\n";
+
+      // first print the value, if any.
+      printPrefixSpaces(os);
+
+      // print our name. 
+      os << "\"" << p->getName() << "\" : ";
+      os.flush();
     }
+    
+    // do we have a value? 
+    if(p->hasValue()) {
+      if(p->get().getType() == Property::Value::PrimitiveType::STRING) {
+	os << "\""; 
+	p->get().print(os); 
+	os << "\"";
+      }
+      else {
+	p->get().print(os);
+      }
+    }
+    else {
+      os << "{\n";
+      depth = depth + 1;     
+      bool pfx_comma = false; 
+      for(auto & n : p->getChildNames()) {
+	privateWrite(p->getProperty(n, false), os, pfx_comma, false); 
+	pfx_comma = true; 
+      }
+      depth = depth - 1; 
+      os << "\n";
+      printPrefixSpaces(os) << "}";
+    }
+    return; 
+  }
+  
+  std::ostream &  PropertyIO_JSON::printPrefixSpaces(std::ostream & os) {
+    for(int i = 0; i < depth; i++) {
+      os << "  "; 
+    }
+    os.flush();
+    
+    return os;
+  }
 }

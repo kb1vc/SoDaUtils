@@ -96,6 +96,10 @@ namespace SoDa {
       void set(double v);
       void set(bool v);
       
+      PrimitiveType getType() const { return vtype; }
+      
+      bool operator==(const Value & other) const; 
+
       std::string str_value;
       double dv; 
       long lv; 
@@ -127,7 +131,9 @@ namespace SoDa {
     void set(double v);
     void set(bool v);
       
-    std::shared_ptr<Value> get();  
+    const Value &  get();  
+    
+    bool hasValue() { return has_value; }
     
     std::shared_ptr<Property> addChild(std::shared_ptr<Property> child, 
 				       bool merge_property = false);
@@ -159,13 +165,15 @@ namespace SoDa {
 
     std::shared_ptr<Property> getParent() const;
 
+    std::string & getName() { return name; }
+    
     void setAttribute(const std::string name, const std::string value);
 
     const std::list<std::string> & getAttributeNames() const;
 
     const Value & getAttribute(const std::string & name, bool throw_exception = false);
 
-    const std::list<std::string> & getChildNames() const;
+    const std::list<std::string> getChildNames() const;
 
     std::shared_ptr<Property> getProperty(const std::string & path, 
 					  bool throw_exception = false);
@@ -212,13 +220,13 @@ namespace SoDa {
     void mergeProperty(std::shared_ptr<Property> dest, std::shared_ptr<Property> src);
   private:
     Value value;
+    bool has_value; 
     std::string name; 
 
     std::map<std::string, Value> attributes;
     std::list<std::string> attribute_names; 
     
     std::map<std::string, std::shared_ptr<Property>> children;
-    std::list<std::string> child_names; 
 
     std::shared_ptr<Property> parent;
 

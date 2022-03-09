@@ -2,7 +2,7 @@
     "first" : 3,
     "second" : 2.5,
     "child1" : {
-	"c1" : "c1string", 
+	"c1" : "c1string",
 	"c2" : "c2string",
 	"c3" : {
 	    "more" : 5

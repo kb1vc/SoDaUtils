@@ -14,10 +14,16 @@ int main(int argc, char * argv[]) {
   ptree->print(std::cout, "   ");
   
   SoDa::PropertyIO_JSON propio; 
+
   
-  if(argc > 1) {
+  if(argc > 2) {
     auto json_tree = propio.read(argv[1]);
     
     json_tree->print(std::cout, ">>> ");
+    
+
+    propio.write(json_tree, argv[2]);
   }
+  
+
 }

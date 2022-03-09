@@ -219,6 +219,28 @@ namespace SoDa {
     return shared_from_this();
   }
 
+  bool Property::Value::operator==(const Value & other) const {
+    if(vtype != other.vtype) return false; 
+    else {
+      switch(vtype) {
+      case LONG: 
+	return lv == other.lv; 
+	break; 
+      case DOUBLE: 
+	return dv == other.dv; 
+	break; 
+      case BOOL: 
+	return bv == other.bv; 
+	break; 
+      case STRING:
+	return str_value == other.str_value; 
+	break; 
+      default: 
+	return true; 
+      }
+    }
+  }
+
   std::ostream & Property::Value::print(std::ostream & os) const {
     int old_width = os.width();
     int old_precision = os.precision();
@@ -255,6 +277,7 @@ namespace SoDa {
 		     std::shared_ptr<Property> parent) : 
     name(name), value(Value(value)), parent(parent)
   {
+    has_value = true; 
   }
 
   Property::Property(const std::string name, 
@@ -264,55 +287,65 @@ namespace SoDa {
     value(v), 
     parent(parent) 
   {
+    has_value = true; 
   }
 
   Property::Property(const std::string name, 
 		     std::shared_ptr<Property> parent) : 
-    name(name), parent(parent) 
+    name(name), parent(parent), value(Property::null_value)
   {
+    has_value = false; 
   }
   
   Property::Property(std::shared_ptr<Property> parent) :
-    name(""), value(Value("")), parent(parent)  {
+    name(""), value(Property::null_value), parent(parent)  {
+    has_value = false; 
   }    
 
   bool Property::get(long & v, bool throw_exception) const {
-    return value.get(v, throw_exception);
+    if(has_value) return value.get(v, throw_exception);
+    else return false; 
   }
 
 
   bool Property::get(double & v, bool throw_exception) const {
-    return value.get(v, throw_exception);        
+    if(has_value) return value.get(v, throw_exception);        
+    else return false;
   }
 
   
   bool Property::get(bool & v, bool throw_exception) const {
-    return value.get(v, throw_exception);
+    if(has_value) return value.get(v, throw_exception);
+    else return false;    
   }
 
   bool Property::get(std::string & v, bool throw_exception) const {
-    return value.get(v, throw_exception);
+    if(has_value) return value.get(v, throw_exception);
+    else return false; 
   }
 
   void Property::set(const std::string & v) {
-    std::cerr << "In property set with [" << v << "]\n";
+    has_value = true; 
     value.set(v);
   }
 
   void Property::set(long v) {
+    has_value = true;     
     value.set(v);
   }
 
   void Property::set(double v) {
+    has_value = true;     
     value.set(v);
   }
 
   void Property::set(bool v) {
+    has_value = true;     
     value.set(v);
   }
   
-  std::shared_ptr<Property::Value> Property::get() { 
-    return value.get(); 
+  const Property::Value & Property::get() { 
+    return value;
   }
   std::shared_ptr<Property> Property::addChild(std::shared_ptr<Property> child, 
 					       bool merge_property) {
@@ -421,7 +454,11 @@ namespace SoDa {
     }
   }
 
-  const std::list<std::string> & Property::getChildNames() const {
+  const std::list<std::string>  Property::getChildNames() const {
+    std::list<std::string> child_names; 
+    for(auto v : children) {
+      child_names.push_back(v.first);
+    }
     return child_names; 
   }
 
