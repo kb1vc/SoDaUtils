@@ -1,6 +1,22 @@
 #include <SoDa/Format.hxx>
 #include <iostream>
 
+class MyFormat : public SoDa::Format_ext<MyFormat> {
+public:
+  MyFormat(const std::string & fmt_string) : Format_ext<MyFormat>(fmt_string, this) {
+  }
+
+  MyFormat & addSBW(const std::string & v) {
+    std::string rv;
+    for(auto c : v) {
+      rv = c + rv;
+    }
+    addS(rv); 
+    return *this;
+  }
+};
+
+
 int main() {
   SoDa::Format sft("Avogadro's number: %0\n"); 
 
@@ -12,4 +28,22 @@ int main() {
   // Let's do this the way a respectable MKS user would have wanted it.
   std::cout << "Here's how right thinking people write "
             << sft.reset().addF(av, 'e');
+
+  std::string test_string("TestString");
+  std::cout << MyFormat("String forward %0 string backward %1 string forward again %2\n")
+    .addS(test_string)
+    .addSBW(test_string)
+    .addS(test_string);
+
+  // print a big number.
+  int bignum = 123456789;
+  std::cout << SoDa::Format("Two ways to see a big number [%0] and [%1]\n")
+    .addI(bignum, 8)
+    .addI(bignum, 14, ',');
+    
+  // now print some hex stuff
+  unsigned long lhex = 0xfedcba9876543210;
+  std::cout << SoDa::Format("Hard to read [%0], easy to read [%1]\n")
+    .addU(lhex, 'x', 30)
+    .addU(lhex, 'X', 28, '_', 4);
 }

@@ -280,6 +280,7 @@ namespace SoDa {
      * 
      * @param v the signed integer value
      * @param width the minimum width of the field. 
+     * @param sep an optional separator for things like 1,234,567
      * @return a reference to this SoDa::Format object to allow 
      * chaining of method invocations. 
      * 
@@ -287,24 +288,36 @@ namespace SoDa {
      * is no more useful than that.  If the value takes more room than 
      * the specified width, the width parameter will be ignored and 
      * the field will be as wide as necessary to accommodate the value. 
+     * 
+     * If specified, a separator character will be added every 3 positions
+     * starting from the bottom. 
      */
-    Format & addI(int v, unsigned int width = 0);
+    Format & addI(int v, unsigned int width = 0, char sep = '\000');
 
     /**
      * @brief insert an unsigned integer into the format string
      * 
      * @param v the unsigned integer value
-     * @param fmt 'x' for hex, 'd' for decimal
+     * @param fmt 'x' or 'X' for hex, 'd' for decimal
      * @param width the minimum width of the field. 
+     * @param sep a separator to be placed between every "group_count"
+     * characters
+     * @param group_count size of segment between separators
      * @return a reference to this SoDa::Format object to allow 
      * chaining of method invocations. 
      * 
+     * If the fmt parameter is 'X' the hexadecimal digit values a through f
+     * will be printed in upper case. 
+     *
      * The width is passed along to the setw I/O manipulator, so it
      * is no more useful than that.  If the value takes more room than 
      * the specified width, the width parameter will be ignored and 
      * the field will be as wide as necessary to accommodate the value. 
      */
-    Format & addU(unsigned int v, char fmt = 'd', unsigned int width = 0);    
+    Format & addU(unsigned long v, char fmt = 'd', 
+		  unsigned int width = 0, 
+		  char sep = '\000',
+		  unsigned int group_count = 4);    
 
 
     /**
@@ -500,8 +513,70 @@ namespace SoDa {
 
     void insertField(const std::string & s);
 
-  }; 
+  };
+
+
+  /**
+   * @brief A class that allows one to extend SoDa::Format with new format
+   * methods. 
+   * 
+   * For an example of *how* one might extend the format facility, take a 
+   * look at the definition of the MyFormat class in the example code at
+   * examples/FormatExample.cxx
+   */
+  template <typename T> class Format_ext : public Format {
+  public:
+    /**
+     * @brief create a format object with placeholders and all that stuff.
+     * But this template class allows Format to be extended with new 
+     * methods. 
+     * 
+     * @param fmt_string the format string with placeholders and stuff.
+     * @param p a pointer to the instance of an object of the type T derived
+     * from Format_ext. 
+     */
+    Format_ext(const std::string & fmt_string, T * p) : Format(fmt_string) {
+      saved_ptr = p; 
+    }
+
+    /**
+     * This wraps the addI method from the Format baseclass, but returns
+     * a reference to the derived class.   So do all the other 
+     * shadow methods here. 
+     */
+    T & addI(int v, unsigned int width = 0, char sep = '\000') { 
+      Format::addI(v, width, sep);
+      return *saved_ptr; 
+    }
+
+    T & addU(unsigned int v, char fmt = 'd', unsigned int width = 0,
+	     char sep = '\000',
+	     unsigned int group_count = 4) {
+      Format::addU(v, fmt, width, sep, group_count);
+      return *saved_ptr;       
+    }
+
+    T & addF(double v, char fmt = 'f', unsigned int width = 0, unsigned int significant_digits = 6) {
+      Format::addF(v, fmt, width, significant_digits);
+      return *saved_ptr; 
+    }
+
+    T & addS(const std::string & v, int width = 0) {
+      Format::addS(v, width);
+      return *saved_ptr; 
+    }
+    
+    T & addC(char v) {
+      Format::addC(v);
+      return *saved_ptr; 
+    }
+    
+  private:
+    T * saved_ptr; 
+  };
 }
 
 std::ostream& operator<<(std::ostream & os, const SoDa::Format & f);
-    
+
+
+

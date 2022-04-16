@@ -5,6 +5,7 @@
 #include <cmath>
 #include <ctype.h>
 #include <regex>
+#include <algorithm>
 
 /*
 BSD 2-Clause License
@@ -133,30 +134,97 @@ namespace SoDa {
     }
   }
 
-  Format & Format::addI(int v, unsigned int w) {
+  Format & Format::addI(int v, unsigned int w, char sep) {
     std::stringstream ss;
-    if(w != 0) {
-      ss << std::setw(w); 
+    if(sep == '\000') {
+      if(w != 0) {
+	ss << std::setw(w); 
+      }
+      ss << v;
+
     }
-    ss << v; 
-    insertField(ss.str()); 
+    else {
+      // print with comma separators
+      std::stringstream pre_ss;
+      pre_ss << v;
+      std::string vstr(pre_ss.str());
+      std::reverse(vstr.begin(), vstr.end());
+      
+      std::string newstr;
+      int i = 0; 
+      for(auto c : vstr) {
+	if(i == 3) {
+	  newstr = sep + newstr;
+	  i = 0; 
+	}
+	newstr = c + newstr;
+	i++;
+      }
+
+      if(w != 0) {
+	ss << std::setw(w);
+      }
+      ss << newstr;
+    }
+    insertField(ss.str());     
     return * this; 
   }
 
-  Format & Format::addU(unsigned int v, char fmt, unsigned int w) {
+  Format & Format::addU(unsigned long v, char fmt, unsigned int w,
+			char sep,
+			unsigned int group_count)
+{
     std::stringstream ss;
-    if(fmt == 'x') ss << "0x"; 
+    std::stringstream pre_ss;
+
+    auto radhint = std::dec;
+    std::string prefix("");
+    switch(fmt) {
+    case 'x':
+    case 'X':       
+      radhint = std::hex;
+      prefix = "0x";
+      break;
+    case 'o': radhint = std::oct;
+      prefix = "0";
+      break;
+    default:
+      radhint = std::dec;
+      break; 
+    }
 
     if(w != 0) {
-      ss << std::setw(w); 
+      unsigned int nw = (w > prefix.size()) ? (w - prefix.size()) : w;
+      ss << std::setw(nw); 
     }
-    
-    if(fmt == 'd') {
-      ss << v; 
+
+    if(sep == '\000') {
+      if(fmt == 'X') pre_ss << std::uppercase;
+      pre_ss << radhint <<  v;
+      ss << (prefix + pre_ss.str());      
     }
     else {
-      ss << std::setfill('0') << std::hex << v; 
+      std::stringstream new_ss;
+      if(fmt == 'X') new_ss << std::uppercase;      
+      new_ss << radhint << v; 
+      std::string vstr(new_ss.str());
+      int i = 0;
+      std::reverse(vstr.begin(), vstr.end());
+      std::string newstr; 
+
+      for(char c : vstr) {
+	if(i == group_count) {
+	  newstr = sep + newstr; 
+	  i = 0; 
+	}
+	newstr = c + newstr;
+	i++; 
+      }
+      newstr = prefix + newstr; 
+      ss << newstr;
     }
+
+    
     insertField(ss.str());     
     return *this;     
   }
