@@ -44,7 +44,6 @@ int main(int argc, char * argv[])
   bool bool_arg, pres_arg;
   std::string str_arg;
   std::vector<std::string> strvec_arg; 
-  std::string kvp_arg;
 
   //! [describe the command line]
   SoDa::Options cmd;  
@@ -58,7 +57,6 @@ int main(int argc, char * argv[])
 	       "An integer argument between -5 and 5 inclusive", 
 	       [](int v) { return (v >= -5) && (v <= 5); },
 	       "Please pick something from -5 to 5.")
-    .add<std::string>(&kvp_arg, "kvp", 'k', "", "<key=value,...>")
         
     .addInfo("\nusage:\tOptionsExample [options] [posargs]")
     .addInfo("\n\tA simple demonstration of the SoDa::Options parser");
@@ -70,18 +68,6 @@ int main(int argc, char * argv[])
 
   std::cerr << "SoDaUtils version [" << cmd.getVersion() << "]\n";
   std::cerr << "SoDaUtils git id [" << cmd.getGitID() << "]\n";
-  SoDa::Options kvp(true);  
-  std::string val1, val2;
-  int ival;
-  std::cout << "key value pair = [" << kvp_arg << "]\n";
-  kvp
-    .add<std::string>(&val1, "key1", '1', "empty", "value for key1")
-    .add<std::string>(&val2, "key2", '2', "empty", "value for key2")
-    .add<int>(&ival, "ikey", 'i', 3, "integer value");
-  kvp.parseKeyValue(kvp_arg);
-  std::cout << "key1 = [" << val1 << "]\n";
-  std::cout << "key2 = [" << val2 << "]\n";
-  std::cout << "ikey = [" << ival << "]\n";
   
   std::cout << "intarg = " << int_arg << "\n";
   std::cout << "boolarg = " << bool_arg << "\n";

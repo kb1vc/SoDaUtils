@@ -166,7 +166,7 @@ namespace SoDa {
   }
 
   bool Options::parse(std::list<std::string> tokens) {
-    OptBase * arg_p = nullptr;
+    OptBase_p arg_p = nullptr;
     try {
     while(!tokens.empty()) {
       std::string tkn = tokens.front();
@@ -241,14 +241,14 @@ namespace SoDa {
     return true; 
   }
 
-  Options::OptBase * Options::findOpt(const std::string & long_name) {
+  Options::OptBase_p Options::findOpt(const std::string & long_name) {
     if(long_map.find(long_name) == long_map.end()) {
       return nullptr;
     }
     return long_map[long_name];
   }
 
-  Options::OptBase * Options::findOpt(char ab_name) {
+  Options::OptBase_p Options::findOpt(char ab_name) {
     if(ab_map.find(ab_name) == ab_map.end()) {
       return nullptr;
     }
@@ -270,7 +270,7 @@ namespace SoDa {
     return ab_map[ab_name]->isPresent();
   }
 
-  void Options::registerOpt(OptBase * arg_p, 
+  void Options::registerOpt(OptBase_p arg_p, 
 		  const std::string & long_name, 
 			    char ab_name) {
     arg_p->setNames(long_name, ab_name); 

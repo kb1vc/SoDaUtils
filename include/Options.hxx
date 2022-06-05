@@ -1,9 +1,10 @@
 #pragma once
 #include "UtilsBase.hxx"
+#include <memory>
 /*
 BSD 2-Clause License
 
-Copyright (c) 2021, Matt Reilly - kb1vc
+Copyright (c) 2021, 2022, Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -235,9 +236,9 @@ posargs =
 		  const std::string & err_msg = std::string("")) {
 
       // create an arg object and push it. 
-      auto arg_p = new Opt<T>(val, 
-			      def_val,			      
-			      doc_str, test_func, err_msg);
+      OptBase_p arg_p = std::make_shared<Opt<T>>(val, 
+					    def_val,			      
+					    doc_str, test_func, err_msg);
 
       registerOpt(arg_p, long_name, ab_name);
       return *this;      
@@ -252,8 +253,8 @@ posargs =
 		  const std::string & err_msg = std::string("")) {
 
       // create an arg object and push it. 
-      auto arg_p = new Opt<T>(val, 
-			      doc_str, test_func, err_msg);
+      OptBase_p arg_p = std::make_shared<Opt<T>>(val, 
+						 doc_str, test_func, err_msg);
 
       registerOpt(arg_p, long_name, ab_name);
       return *this;      
@@ -276,7 +277,7 @@ posargs =
 		   const std::string & long_name, 
 		   char ab_name, 
 		   const std::string & doc_str = std::string("")) {
-      auto arg_p = new OptPresent(val, doc_str);
+      OptBase_p arg_p = std::make_shared<OptPresent>(val, doc_str);
       registerOpt(arg_p, long_name, ab_name);
       return *this;      
     }
@@ -311,7 +312,7 @@ posargs =
 		   const std::function<bool(T)> & test_func = [](T val){ return true; },
 		   const std::string & err_msg = std::string("")) {
 
-      auto arg_p = new OptVec<T>(val, doc_str, test_func, err_msg);
+      OptBase_p arg_p = std::make_shared<OptVec<T>>(val, doc_str, test_func, err_msg);
       registerOpt(arg_p, long_name, ab_name);
       
       return *this;
@@ -434,12 +435,13 @@ posargs =
      * 
      */
     bool parseKeyValue(const std::list<std::string> & ls);
-
-    
     
   private:
 
     int isSwitch(const std::string & tkn);
+
+    class OptBase; 
+    typedef std::shared_ptr<OptBase> OptBase_p; 
     
     class OptBase {
     public:
@@ -624,20 +626,20 @@ posargs =
       bool * val_p; 
     };
 
-    void registerOpt(OptBase * arg_p, 
+    void registerOpt(OptBase_p arg_p, 
 		  const std::string & long_name, 
 		  char ab_name); 
 
-    OptBase * findOpt(char c);
+    OptBase_p findOpt(char c);
 
-    OptBase * findOpt(const std::string & key);
+    OptBase_p findOpt(const std::string & key);
 
 
     std::list<std::string> buildTokenList(int argc, char * argv[]);
     std::list<std::string> buildTokenList(const std::string & s);    
     
-    std::map<std::string, OptBase * > long_map;
-    std::map<char, OptBase * > ab_map; 
+    std::map<std::string, OptBase_p > long_map;
+    std::map<char, OptBase_p > ab_map; 
 
     std::list<std::string> info_list; 
     
