@@ -17,7 +17,6 @@ void barrier(int waitcount) {
     waiters++;
     mtx.unlock();
   }
-  std::cerr << "." << waiters << "\n";
   // now wait
   while(waiters < waitcount) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -27,48 +26,53 @@ void barrier(int waitcount) {
   
 }
 
-int test(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox, int num_msgs, int num_threads) {
-    int me = mailbox->subscribe();
+int simpleMailBoxTest(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox, int num_msgs, int num_threads) {
+  //! [subscribe and wait]
 
-    barrier(num_threads);
-    std::cerr << me << " out of barrier\n";
-    
-    // push some messages
-    for(int i = 0; i < num_msgs; i++) {
-      auto msg = std::make_shared<std::vector<int>>(1000);
-      (*msg)[2] = me;
-      (*msg)[3] = i; 
-      mailbox->put(msg);
-    }
-  
-    // now look for messages
-    std::vector<int> msg_count(num_threads);
-    int totmsgs = num_msgs * num_threads; 
-    for(int i = 0; i < num_msgs * num_threads;) {
-      auto p = mailbox->get(me);
-      if(p != nullptr) {
-	msg_count.at((*p)[2])++; 
-	i++;
-	std::cerr << SoDa::Format("me %0 other %1 msg %2\n")
-	  .addI(me)
-	  .addI((*p)[2])
-	  .addI((*p)[3]);
-      }
-    }
+  int me = mailbox->subscribe();
 
-    std::cout << SoDa::Format("subscriber %0 got all %1 expected messages\n")
-      .addI(me)
-      .addI(totmsgs);
-  
-    std::shared_ptr<std::vector<int>> p; 
-    while((p = mailbox->get(me)) != nullptr) {
-      std::cout << SoDa::Format("subscriber %0 got extra message from subscriber %1 : %2\n")
-	.addI(me)
-	.addI((*p)[2])
-	.addI((*p)[3]);
-    }
-    return 0; 
+  barrier(num_threads);
+  //! [subscribe and wait]  
+
+  // push some messages
+  //! [send messages]
+  for(int i = 0; i < num_msgs; i++) {
+    auto msg = std::make_shared<std::vector<int>>(1000);
+    (*msg)[2] = me;
+    (*msg)[3] = i; 
+    mailbox->put(msg);
   }
+  //! [send messages]
+
+
+  // now look for messages
+  int totmsgs = num_msgs * num_threads;
+  // let's sum the content of all the messages
+  int msg_sum = 0;
+  for(int i = 0; i < num_msgs * num_threads;) {
+    //! [get message]
+    auto p = mailbox->get(me);
+    if(p != nullptr) {
+      i++;
+      msg_sum += (*p)[3]; 
+    }
+    //! [get message]    
+  }
+
+  std::cout << SoDa::Format("subscriber %0 got all %1 expected messages sum was %2\n")
+    .addI(me)
+    .addI(totmsgs)
+    .addI(msg_sum);
+  
+  std::shared_ptr<std::vector<int>> p; 
+  while((p = mailbox->get(me)) != nullptr) {
+    std::cout << SoDa::Format("subscriber %0 got extra message from subscriber %1 : %2\n")
+      .addI(me)
+      .addI((*p)[2])
+      .addI((*p)[3]);
+  }
+  return 0; 
+}
 
 
 int main(int argc, char ** argv) {
@@ -80,20 +84,25 @@ int main(int argc, char ** argv) {
     .add<int>(&num_threads, "th", 't', 2, "Number of threads in test.");
 
   if(!cmd.parse(argc, argv)) exit(-1);
-  
-  auto mailbox = std::make_shared<SoDa::MailBox<std::vector<int>>>("TestMailBox"); 
-  
 
+  //! [create a mailbox]
+  auto mailbox_p = SoDa::makeMailBox<std::vector<int>>("TestMail");
+  //! [create a mailbox]
+  
   std::cout << "Creating threads\n";
   
   std::list<std::thread *> threads;
   std::cout << SoDa::Format("Spawning %0 threads\n").addI(num_threads);
   std::cout.flush();
-  
+
+  //! [create threads]
   for(int i = 0; i < num_threads; i++) {
-    threads.push_back(new std::thread(test, mailbox, msg_count, num_threads));
+    threads.push_back(new std::thread(simpleMailBoxTest, 
+				      mailbox_p, 
+				      msg_count, 
+				      num_threads));
   }
-  
+  //! [create threads]  
   std::cout << SoDa::Format("Waiting to join threads\n");
   std::cout.flush();
   

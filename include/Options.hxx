@@ -483,31 +483,31 @@ posargs =
     protected:
       
       template<typename T> 
-      void setValBase(T * v, const std::string & vstr) {
+      void setValBase(T & v, const std::string & vstr) {
 	std::stringstream ss(vstr, std::ios::in); 
-	ss >> *v;
+	ss >> v;
 	if(!ss) {
 	  throw BadOptValueException(long_name, vstr, err_msg); 
 	}
       }
 
-      void setValBase(std::string * v, const std::string & vstr) {
-	*v = vstr; 
+      void setValBase(std::string & v, const std::string & vstr) {
+	v = vstr; 
       }
 
-      void setValBase(bool * v, const std::string & vstr) {
+      void setValBase(bool & v, const std::string & vstr) {
 	auto vs = vstr;
 	std::transform(vs.begin(), vs.end(), vs.begin(), 
 		       [](unsigned char c){ return std::toupper(c);} );
 
 	if(vs.size() == 0) {
-	  *v = false;
+	  v = false;
 	}
 	if((vs == "TRUE") || (vs[0] == 'T')) {
-	  *v = true;
+	  v = true;
 	}
 	else if((vs == "FALSE") || (vs[0] == 'F')){
-	  *v = false;
+	  v = false;
 	}
 	else {
 	  int foo;
@@ -517,14 +517,12 @@ posargs =
 	    throw BadOptValueException(long_name, vstr, err_msg); 	    
 	  }
 	  else {
-	    *v = (foo != 0);
+	    v = (foo != 0);
 	  }
 	}
-
 	return; 
-	
-	
       }
+
       std::string doc_str;
       std::string err_msg;
       
@@ -554,7 +552,7 @@ posargs =
       }
       
       bool setVal(const std::string & vstr) {
-	setValBase(val_p, vstr);
+	setValBase(*val_p, vstr);
 	if (!test_func(*val_p)) {
 	  throw BadOptValueException(long_name, vstr, err_msg); 	  
 	}
@@ -582,7 +580,7 @@ posargs =
 
       bool setVal(const std::string & vstr) {
 	T v;
-	setValBase(&v, vstr);
+	setValBase(v, vstr);
 
 	if (!test_func(v)) {	
 	  throw BadOptValueException(long_name, vstr, err_msg);

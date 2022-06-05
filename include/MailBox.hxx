@@ -1,11 +1,11 @@
 #pragma once
 #include <string>
-#include <exception>
-#include <stdexcept>
 #include <vector>
 #include <queue>
 #include <memory>
 #include <mutex>
+#include "Exception.hxx"
+
 /*
   BSD 2-Clause License
 
@@ -41,24 +41,52 @@
  */
 
 /**
- * @page SoDa::MailBox A buffer object that produces vectors
- * from a pool. 
+ * @page SoDa::MailBox A simple thread-to-thread communication class. 
+ *
+ * This was originally developed for SoDaRadio. 
  * 
+ * The multithread model here assumes a set of threads sharing a common
+ * address space. Threads may put messages into a mailbox that are then
+ * readable by any other thread that subscribes to the mailbox.  This is
+ * a bit of a mixed metaphor, but imagine messages as magazines, threads
+ * as subscribers, and mailboxes as the thing to which the magazines get
+ * delivered.
  * 
- * ## Namespace
+ *  (Long ago, there were "publishers" who gathered up information on
+ * a common topic, or for readers with a common interest. This stuff
+ * would be written down and then printed on "paper." Many sheets of
+ * paper would be stuck together, almost like a book -- but
+ * thinner. (For an example of a "book" see a museum near you. It
+ * might be called *the something* Library.) These not-quite-books
+ * would be carried to each person who paid for it, *subscribers* on a
+ * regular basis. They would be left at each subscriber's house kinda like
+ * Amazon's *subscribe and save* thing.)
+ *
+ * The SoDa::MailBox class provides a mailbox that accepts and delivers
+ * messages of a single type (named when the mailbox is created). Each
+ * message sent will be received by *all* subscribers, even the originating
+ * subscriber. 
+ *
+ * For an example, take a look at MailBoxTest.cxx. 
  * 
- * SoDa::MailBox is enclosed in the SoDa namespace because it is
- * inevitiable that there are lots of classes out there called
- * "BUffer."  Perhaps you have written one of them.  Naming a class "MailBox"
- * is like naming a street "Oak:" It might make lots of sense, but
- * you're going to have to reconcile yourself that there's a street 
- * with the same name one town over and sometimes your pizza is going
- * to get mis-routed. 
+ * After usign the SoDa::Options class to parse the command line, 
+ * the example creates a mailbox and a std::shared_ptr to it (mailbox_p).
+ * In this example, all messages for this mailbox are vectors of ints.  
  * 
- * So MailBox is in the SoDa namespace.  SoDa is from 
- * <a href="https://kb1vc.github.io/SoDaRadio/">SoDaRadio</a> though the SoDa::MailBox 
- * class is a completely independent chunk 'o code. Most of the code I'll release
- * will be in the SoDa namespace, just to avoid the Oak Street problem.
+ * \snippet MailBoxTest.cxx create a mailbox
+ * 
+ * Then it creates a set of threads, using the C++ thread class. 
+ * Each thread executes a single function called "simpleMailBoxTest."
+ * The function is passed a pointer to the mailbox, a number of messages
+ * to send, and the total number of threads participating in the test. 
+ * 
+ * \snippet MailBoxTest.cxx create threads
+ *
+ * Each thread subscribes to the mailbox, and then waits for all the other
+ * threads to subscribe. (Each thread waits at a barrier:)
+ *
+ * \snippet MailBoxTest.cxx subscribe and wait
+ *
  */
 
 /**
@@ -67,33 +95,14 @@
  * Not much else is spelled that way, so we're probably not going to
  * have too many collisions with code written by other people.
  *
- * SoDa is the namespace I use in code like <a
- * href="https://kb1vc.github.io/SoDaRadio/">SoDaRadio</a> (The S D
- * and R stand for Software Defined Radio.  The o,a,d,i,o don't stand
- * for anything in particular.)  But this code has nothing to do with
- * software defined radios or any of that stuff.
+ * SoDa is the namespace I use in code like
+ * <a href="https://kb1vc.github.io/SoDaRadio/">SoDaRadio</a> (The S
+ * D and R stand for Software Defined Radio.  The o,a,d,i,o don't
+ * stand for anything in particular.)  But this code has nothing to do
+ * with software defined radios or any of that stuff.
  */
 namespace SoDa {
 
-  /**
-   * @brief Catch this when you don't care why the MailBox threw an exception
-   */
-  class MailBoxException : public std::runtime_error {
-  public:
-    MailBoxException(std::string name, const std::string & problem) :
-      std::runtime_error("SoDa::MailBox[" + name + "] " + problem) {
-    }
-  }; 
-  
-  /**
-   * @brief The subscriber ID was invalid. 
-   */
-  class MailBoxMissingSubscriberException : public MailBoxException {
-  public:
-    MailBoxMissingSubscriberException(std::string name, const std::string & operation, int sub_id) :
-      MailBoxException(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
-    }
-  }; 
   
   
   /**
@@ -102,7 +111,6 @@ namespace SoDa {
    *
    * @tparam T Type of message that will be found in this mailbox
    */
-
   template<typename T>
   class MailBox {
   public:
@@ -126,7 +134,8 @@ namespace SoDa {
       }
       message_queues.clear();
     }
-    
+
+  
     /**
      * @brief Subscribe the caller to a mailbox.  There may be 
      * multiple subscribers to the same mailbox.  A copy of each
@@ -161,7 +170,7 @@ namespace SoDa {
     std::shared_ptr<T> get(int subscriber_id) {
       std::lock_guard<std::mutex> lock(mtx);	      
       if(message_queues.size() <= subscriber_id) {
-	throw MailBoxMissingSubscriberException(this->name, "get()", subscriber_id);
+	throw MailBoxMissingSubscriber(this->name, "get()", subscriber_id);
       }
       else {
 	if(message_queues[subscriber_id].empty()) {
@@ -197,7 +206,7 @@ namespace SoDa {
     void clear(int subscriber_id) {
       std::lock_guard<std::mutex> lock(mtx);      
       if(message_queues.size() <= subscriber_id) {
-	throw MailBoxMissingSubscriberException(this->name, "clear()", subscriber_id);	
+	throw MailBoxMissingSubscriber(this->name, "clear()", subscriber_id);	
       }
       else {
 	while(!message_queues[subscriber_id].empty()) {
@@ -206,6 +215,26 @@ namespace SoDa {
       }
     }
 
+  /**
+   * @brief Catch this when you don't care why the MailBox threw an exception
+   */
+  class MailBoxException : public SoDa::Exception {
+  public:
+    MailBoxException(std::string name, const std::string & problem) :
+      SoDa::Exception("SoDa::MailBox[" + name + "] " + problem) {
+    }
+  }; 
+  
+  /**
+   * @brief The subscriber ID was invalid. 
+   */
+  class MailBoxMissingSubscriber : public MailBoxException {
+  public:
+    MailBoxMissingSubscriber(std::string name, const std::string & operation, int sub_id) :
+      MailBoxException(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
+    }
+  }; 
+    
   protected:
     std::string name;
     std::vector<std::queue<std::shared_ptr<T>>> message_queues; 
@@ -214,6 +243,23 @@ namespace SoDa {
     std::mutex mtx; 
   };
 
+
+    /**
+     * @brief Make a mailbox and return a shared pointer to it. 
+     *
+     * This is a safer way of creating mailboxes, as it ensures that
+     * the mailbox will live even after it "goes out of scope" in the
+     * thing that created the mailbox and spawned the threads that use
+     * it. Sure we could rely on good behavior, but why? 
+     *
+     * @param mname Name of the mailbox. 
+     * @returns shared pointer to a Mailbox object
+     */ 
+  template<typename T>
+  std::shared_ptr<MailBox<T>> makeMailBox(const std::string & mname) {
+    return std::make_shared<MailBox<T>>(mname);
+  }
+  
 }
 
 

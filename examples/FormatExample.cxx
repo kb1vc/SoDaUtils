@@ -1,6 +1,14 @@
 #include <SoDa/Format.hxx>
 #include <iostream>
 
+/**
+ * @brief Extend the Format class to print a string, backwards.
+ * 
+ * So .addSBW("foo") would produce "oof"
+ * 
+ * This extends the Format class and preserves 
+ * the "format methods return a format" scheme. 
+ */
 class MyFormat : public SoDa::Format_ext<MyFormat> {
 public:
   MyFormat(const std::string & fmt_string) : Format_ext<MyFormat>(fmt_string, this) {
@@ -16,6 +24,10 @@ public:
   }
 };
 
+template<typename FMT>
+void testFormatParam(FMT & fmt, int i) {
+  std::cout << fmt.addI(i * i).addSBW("foo"); 
+}
 
 int main() {
   SoDa::Format sft("Avogadro's number: %0\n"); 
@@ -35,6 +47,10 @@ int main() {
     .addSBW(test_string)
     .addS(test_string);
 
+  MyFormat mfmt("this is an int %0  this is a backward string %1\n");
+
+  testFormatParam(mfmt, 3);
+  
   // print a big number.
   int bignum = 123456789;
   std::cout << SoDa::Format("Two ways to see a big number [%0] and [%1]\n")
