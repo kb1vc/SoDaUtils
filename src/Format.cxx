@@ -10,7 +10,7 @@
 /*
 BSD 2-Clause License
 
-Copyright (c) 2020, Matt Reilly - kb1vc
+Copyright (c) 2022, Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -107,12 +107,19 @@ namespace SoDa {
 	else {
 	  // we scanned an fld, now push the fmt specifier
 	  format_string_segments.push_back(FmtStringSeg(cur_fldnum));
-	  // set the state
-	  s_state = NORM;
+	  // set the state if we aren't looking at a new %
+	  if(c == '%') {
+	    s_state = SAW_PC;
+	  }
+	  else {
+	    s_state = NORM;
+	  }
 	  // clear the current string
 	  cur_str.clear();
 	  // and save the character
-	  cur_str.push_back(c); 
+	  if(s_state == NORM) {
+	    cur_str.push_back(c);
+	  }
 	}
 	break; 
       }
