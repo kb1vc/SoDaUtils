@@ -90,6 +90,10 @@ int main(int argc, char * argv[]) {
 
   std::cerr << SoDa::Format("This is what 0 looks like [%0]\n")
     .addF(0.0, 'e', 0, 0);
+
+  std::cerr << SoDa::Format("Testing adjacent markers [%0%1] should be [foobar]\n")
+    .addS("foo")
+    .addS("bar");
   
   if(argc < 5) {
     runBigTest();
