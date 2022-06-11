@@ -52,7 +52,7 @@ int runBigTest() {
   
   double test_v = 64.0;
   std::string formats("esg");
-  int itcount = 500000; // 100000; 
+  int itcount = 50000; // 100000; 
   for(int i = 0; i < itcount; i++) {
     double test_iv = i; 
     for(double e = -18; e < 18; e++) {
@@ -96,7 +96,21 @@ int main(int argc, char * argv[]) {
     .addS("bar");
   
   if(argc < 5) {
-    runBigTest();
+    int rval; 
+    try {
+      rval = runBigTest(); 
+    }
+    catch(SoDa::Exception & e) {
+      std::cerr << e.what() << "\n";
+      exit(-1);
+    }
+    if(rval > 0) {
+      exit(-1);
+    }
+    else {
+      exit(0);
+    }
+
   }
   else {
     double v = atof(argv[1]);

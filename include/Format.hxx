@@ -5,6 +5,8 @@
 #include <iostream>
 #include <list>
 #include "UtilsBase.hxx"
+#include "Exception.hxx"
+
 /*
 BSD 2-Clause License
 
@@ -444,7 +446,7 @@ namespace SoDa {
      * Inherits from std::runtime_error so the catcher may use "what" to
      * find out what went wrong. 
      */
-    class BadFormat : public std::runtime_error {
+    class BadFormat : public Exception {
     public:
       /**
        * @brief build a BadFormat exception object. 
@@ -454,8 +456,8 @@ namespace SoDa {
        * original format spec. 
        */
       BadFormat(const std::string & problem, const Format & fmt) :
-	std::runtime_error(problem + " Format string was \n\"" 
-			   + fmt.getOrig() + "\"\n") { }
+	Exception(problem + " Format string was \n\"" 
+		  + fmt.getOrig() + "\"\n") { }
     };
 
     /**

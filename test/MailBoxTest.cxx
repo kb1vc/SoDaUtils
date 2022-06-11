@@ -64,12 +64,13 @@ int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p,
   unsigned long expected_sum = num_threads * (N * (N+1))/2;
   
   if(expected_sum != msg_sum) {
-  std::cerr << SoDa::Format("subscriber %0 got all %1 expected messages sum was %2 (should have been %4) sender sum was %3\n")
+    std::cerr << SoDa::Format("subscriber %0 got all %1 expected messages sum was %2 (should have been %4) sender sum was %3\n")
     .addI(me)
     .addI(totmsgs)
     .addU(msg_sum)
     .addU(sender_sum)
     .addU(expected_sum);
+    return -1;
   }
   
   std::shared_ptr<MyMsg> p; 
@@ -77,6 +78,7 @@ int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p,
     std::cerr << SoDa::Format("subscriber %0 got extra message from subscriber %1 : %2\n")
       .addI(me)
       .addI(p->v);
+    return -1; 
   }
   return 0; 
 }
