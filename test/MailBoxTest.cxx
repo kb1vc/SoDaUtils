@@ -14,19 +14,24 @@ std::mutex mtx;
 class MyMsg {
 public:
   MyMsg(int from, int v) : from(from), v(v) {
+    std::lock_guard<std::mutex> lock(mtx);
+    tot_active++; 
   }
 
   ~MyMsg() { 
-
+    std::lock_guard<std::mutex> lock(mtx);
+    tot_active--; 
   }
 
   static std::shared_ptr<MyMsg> makeMsg(int from, int v) {
     return std::make_shared<MyMsg>(from, v);
   }
 
+  static unsigned int tot_active;
   int from, v;
 };
 
+unsigned int MyMsg::tot_active = 0;
 
 int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p, 
 		   int num_msgs, int num_threads, 
@@ -220,4 +225,10 @@ int main(int argc, char ** argv) {
   
   std::cerr << "test 2\n";
   testObjMessage(msg_count, num_threads);
+  
+  if(MyMsg::tot_active > 0) {
+    std::cerr << "There may be a leak in allocating messages: " << 
+      MyMsg::tot_active << " still outstanding.\n";
+    exit(-1);
+  }
 }
