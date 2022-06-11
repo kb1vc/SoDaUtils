@@ -5,7 +5,7 @@
 #include <memory>
 #include <mutex>
 #include "Exception.hxx"
-
+#include "NoCopy.hxx"
 /*
   BSD 2-Clause License
 
@@ -43,7 +43,13 @@
 /**
  * @page SoDa::MailBox A simple thread-to-thread communication class. 
  *
- * This was originally developed for SoDaRadio. 
+ * This was derived from classes originally developed for SoDaRadio.
+ * The advent of smart pointer support in C++ made the old
+ * implementation look pretty crusty. Earlier implementations also
+ * assumed the existence of a buffer allocator, to recycle created
+ * objects. This didn't prove to be all that useful. In the case of a
+ * large std::vector, for instance, the buffer allocator was *less*
+ * efficient and speedy than just creating each vector when needed.
  * 
  * The multithread model here assumes a set of threads sharing a common
  * address space. Threads may put messages into a mailbox that are then
@@ -75,8 +81,17 @@
  * 
  * \snippet MailBoxTest.cxx create a mailbox
  * 
+ * The example actually creates a '''shared_ptr''' to the mailbox. It
+ * is a *really* bad idea to pass a pointer to an object created on
+ * the stack to a thread. It is possible that the object might go out
+ * of scope in its creator before the thread is done with
+ * it. Allocating a MailBox with '''new''' and passing a pointer to
+ * the resulting heap allocated object is much safer. Using a
+ * '''shared_ptr''' will ensure that the MailBox isn't destroyed until
+ * all threads and other pointer users have "let it go."
+ * 
  * Then it creates a set of threads, using the C++ thread class. 
- * Each thread executes a single function called "simpleMailBoxTest."
+ * Each thread executes a single function called "objMailBoxTest."
  * The function is passed a pointer to the mailbox, a number of messages
  * to send, and the total number of threads participating in the test. 
  * 
@@ -86,6 +101,15 @@
  * threads to subscribe. (Each thread waits at a barrier:)
  *
  * \snippet MailBoxTest.cxx subscribe and wait
+ *
+ * In this example, each thread puts '''num_msgs''' messages into the
+ * mailbox.
+ * 
+ * \snippet MailBoxTest.cxx send messages
+ *
+ * Once each thread has sent its messages, it will get, in turn, each message that was posted to the mailbox. All threads will receive All messages, even their own. 
+ * 
+ * The call to '''get''' is non-blocking. If there are no messages in the mailbox, '''get''' will return a nullptr. 
  *
  */
 
@@ -102,8 +126,6 @@
  * with software defined radios or any of that stuff.
  */
 namespace SoDa {
-
-  
   
   /**
    * @class MailBox<T>
@@ -112,7 +134,7 @@ namespace SoDa {
    * @tparam T Type of message that will be found in this mailbox
    */
   template<typename T>
-  class MailBox {
+  class MailBox : public NoCopy {
   public:
     /**
      * @brief Create a mailbox. All mailboxes can put and get 

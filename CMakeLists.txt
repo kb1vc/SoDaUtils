@@ -15,12 +15,12 @@ PROJECT(SoDaUtils)
 INCLUDE(GNUInstallDirs)
 
 SET(SoDaUtils_VERSION_MAJOR 1)
-SET(SoDaUtils_VERSION_MINOR 5)
-SET(SoDaUtils_VERSION_PATCH 1)
+SET(SoDaUtils_VERSION_MINOR 6)
+SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
 set(SoDaUtils_PACKAGE_DESCRIPTION 
-  "SoDaUtils provides simple string formatting and command line parsing for C++ applications."
+  "SoDaUtils provides simple string formatting, command line parsing, message handling, and barrier synchronization for C++ applications."
 )
 
 IF(BUILD_RPM)

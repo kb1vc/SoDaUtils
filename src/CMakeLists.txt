@@ -6,6 +6,7 @@ set(UTILS_SRCS
 	Options.cxx
 	Format.cxx
 	UtilsBase.cxx
+	Barrier.cxx
 	)
 
 

@@ -10,5 +10,9 @@ set(TST_FMT_SRCS
 
 add_executable(FormatTest ${TST_FMT_SRCS})
       
-add_executable(MailBoxTest MailBoxTest.cxx ../src/Format.cxx ../src/Options.cxx ../src/UtilsBase.cxx ../src/Split.cxx)
+add_executable(MailBoxTest MailBoxTest.cxx)
+target_link_libraries(MailBoxTest sodautils)
+
+add_executable(BarrierTest BarrierTest.cxx)
+target_link_libraries(BarrierTest sodautils)
 
