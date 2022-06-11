@@ -19,7 +19,7 @@ target_link_libraries(BarrierTest sodautils)
 enable_testing()
 
 add_test(NAME FastBarrierTest 
-  COMMAND $<TARGET_FILE:BarrierTest> --maddur 35 --threads 20 --trials 10000)
+  COMMAND $<TARGET_FILE:BarrierTest> --maddur 35 --threads 20 --trials 100000)
 set_tests_properties(FastBarrierTest PROPERTIES
   FAIL_REGULAR_EXPRESSION "Ooops, dang!"
   )
@@ -31,7 +31,7 @@ set_tests_properties(FastBarrierTest_should_timeout PROPERTIES
 
 
 add_test(NAME MailBoxTest1
-  COMMAND $<TARGET_FILE:MailBoxTest> -m 10000 -t 20)
+  COMMAND $<TARGET_FILE:MailBoxTest> -m 50000 -t 20 -r 10)
 set_tests_properties(MailBoxTest1 PROPERTIES
   FAIL_REGULAR_EXPRESSION "subscriber")
 

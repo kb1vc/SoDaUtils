@@ -214,9 +214,10 @@ int main(int argc, char ** argv) {
   // create a mailbox
   SoDa::Options cmd;
 
-  int msg_count, num_threads; 
+  int msg_count, num_threads, num_trials; 
   cmd.add<int>(&msg_count, "msgs", 'm', 1, "Number of messages to send from each thread")
-    .add<int>(&num_threads, "th", 't', 2, "Number of threads in test.");
+    .add<int>(&num_threads, "th", 't', 2, "Number of threads in test.")
+    .add<int>(&num_trials, "trials", 'r', 1, "Number of trials to run.");
 
   if(!cmd.parse(argc, argv)) exit(-1);
 
@@ -224,11 +225,13 @@ int main(int argc, char ** argv) {
   // testVectorMsg(msg_count, num_threads);
   
   std::cerr << "test 2\n";
-  testObjMessage(msg_count, num_threads);
-  
-  if(MyMsg::tot_active > 0) {
-    std::cerr << "There may be a leak in allocating messages: " << 
-      MyMsg::tot_active << " still outstanding.\n";
-    exit(-1);
+  for(int i = 0; i < num_trials; i++) {
+    testObjMessage(msg_count, num_threads);
+    
+    if(MyMsg::tot_active > 0) {
+      std::cerr << "There may be a leak in allocating messages: " << 
+	MyMsg::tot_active << " still outstanding.\n";
+      exit(-1);
+    }
   }
 }
