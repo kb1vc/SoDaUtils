@@ -42,7 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * @page SoDa::Format An "Intelligent" String Formatting Facility
+ * @page SoDa::Format An "intelligent" string formatting facility
  * 
  * SoDa::Format is a class that allows intelligent formatting of
  * integer, floating point, string, and character values into

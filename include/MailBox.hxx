@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
-#include <vector>
+#include <map>
 #include <queue>
 #include <memory>
 #include <mutex>
+#include "Format.hxx"
 #include "Exception.hxx"
 #include "NoCopy.hxx"
 /*
@@ -107,11 +108,35 @@
  * 
  * \snippet MailBoxTest.cxx send messages
  *
- * Once each thread has sent its messages, it will get, in turn, each message that was posted to the mailbox. All threads will receive All messages, even their own. 
+ * Once each thread has sent its messages, it will get, in turn, each
+ * message that was posted to the mailbox. All threads will receive
+ * All messages, even their own.
  * 
- * The call to '''get''' is non-blocking. If there are no messages in the mailbox, '''get''' will return a nullptr. 
- *
- */
+ * \snippet MailBoxTest.cxx get message
+ * 
+ * The call to '''get''' is non-blocking. If there are no messages in
+ * the mailbox, '''get''' will return a nullptr.  Also, see that the
+ * '''get''' method takes a "subscriber id." This is the id that was
+ * returned by the '''subscribe''' method. Calling get with a
+ * different subscriber id will screw things up, in all likelihood.
+ * 
+ * The '''get''' method returns a shared pointer to a message. The
+ * shared pointer is important, as when its value changes or it goes
+ * out of scope, the reference count for the message is
+ * decreased. When the last subscriber has read and disposed of the
+ * message (by setting the pointer to nullptr or just letting it go
+	    * out of scope) the storage for the message will be reclaimed (the
+									   * message will be destroyed.)
+									   * 
+									   * Because of this mechanism, if one of the subscribers to a mailbox
+									   * stops reading the mail (calling '''get''') that subscriber's
+									   * mailbox will grow, filling with unread messages. The other
+									   * subscribers will proceed unimpeeded, but the waiting messages take
+									   * up storage and can't be freed until the laggard subscriber catches
+									   * up.
+									   *
+									   * 
+									   */
 
 /**
  * @namespace SoDa
@@ -126,6 +151,36 @@
  * with software defined radios or any of that stuff.
  */
 namespace SoDa {
+
+  /**
+   * @brief Catch this when you don't care why the MailBox threw an exception
+   */
+  class MailBoxException : public SoDa::Exception {
+  public:
+    MailBoxException(std::string name, const std::string & problem) :
+      SoDa::Exception("SoDa::MailBox[" + name + "] " + problem) {
+    }
+  };
+
+  
+  /**
+   * @brief The subscriber ID was invalid. 
+   */
+  class MissingSubscriber : public MailBoxException {
+  public:
+    MissingSubscriber(std::string name, const std::string & operation, int sub_id) :
+      MailBoxException(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
+    }
+  };
+
+  class SubscriptionMismatch : public MailBoxException {
+  public:
+    SubscriptionMismatch(const std::string & should_be
+			 , const std::string & was) : 
+      MailBoxException(should_be, SoDa::Format("caller specified the wrong mailbox")
+		       .addS(was).str()) {
+    }
+  }; 
   
   /**
    * @class MailBox<T>
@@ -148,32 +203,63 @@ namespace SoDa {
      * to "read the mail"
      */
     MailBox(std::string name) : name(name) {
+      subscription_counter = 0; 
     }
 
     ~MailBox() {
       for(auto & s : message_queues) {
-	while(!s.empty()) s.pop();
+	while(!s.second.empty()) s.second.pop();
       }
       message_queues.clear();
     }
 
-  
+  protected:  
+    class SubscriptionCl {
+    public:
+      SubscriptionCl(MailBox<T> * mbox, int idx) {
+	this_mbox = mbox; 
+	subscriber_index = idx; 
+      }
+
+      ~SubscriptionCl() {
+	this_mbox->unsubscribe(subscriber_index);
+      }
+
+      int getIndex(MailBox<T> * mbox) {
+	if(mbox != this_mbox) {
+	  throw SubscriptionMismatch(mbox->getName(), this_mbox->getName()); 
+	}
+	else {
+	  return subscriber_index; 
+	}
+      }
+      /// selects the message queue
+      int subscriber_index;
+      /// double check that we're referencing the right mailbox
+      MailBox<T> * this_mbox; 
+    };
+
+  public:
+    typedef std::unique_ptr<SubscriptionCl> Subscription; 
+    
     /**
      * @brief Subscribe the caller to a mailbox.  There may be 
      * multiple subscribers to the same mailbox.  A copy of each
      * message will be reserved for each caller. 
      * 
-     * @returns subscriber ID. 
+     * @returns a smart pointer to a subscriber object. 
      */
-    int subscribe() {
+    Subscription subscribe() {
       std::lock_guard<std::mutex> lock(mtx);	      
       // what will the subscriber number be? 
-      int ret = message_queues.size();
+      Subscription ret(new SubscriptionCl(this,
+					  subscription_counter));
 
       // make a subscriber queue
-      message_queues.push_back(std::queue<std::shared_ptr<T>>());
-
-      return ret; 
+      message_queues[subscription_counter] = std::queue<std::shared_ptr<T>>();
+      
+      subscription_counter++;
+      return ret;
     }
 
     /**
@@ -185,24 +271,20 @@ namespace SoDa {
     /**
      * Get an object out of the mailbox for this subscriber
      * 
-     * @param subscriber_id each user of a mailbox must have subscribed to the mailbox. 
+     * @param subs each user of a mailbox must have subscribed to the mailbox. 
      * (I know, we're mixing metaphors here... sigh.)
      * @returns The oldest object in the subscriber's mailbox. 
      */
-    std::shared_ptr<T> get(int subscriber_id) {
+    std::shared_ptr<T> get(Subscription & subs) {
       std::lock_guard<std::mutex> lock(mtx);	      
-      if(message_queues.size() <= subscriber_id) {
-	throw MailBoxMissingSubscriber(this->name, "get()", subscriber_id);
+      auto mqueue = getQueue(subs); 
+      if(mqueue.empty()) {
+	return nullptr;
       }
       else {
-	if(message_queues[subscriber_id].empty()) {
-	  return nullptr;
-	}
-	else {
-	  auto ret = message_queues[subscriber_id].front();
-	  message_queues[subscriber_id].pop();
-	  return ret;
-	}
+	auto ret = mqueue.front();
+	mqueue.pop();
+	return ret;
       }
     }
 
@@ -216,71 +298,69 @@ namespace SoDa {
     void put(std::shared_ptr<T> msg) {
       std::lock_guard<std::mutex> lock(mtx);            
       for(auto & q : message_queues) {
-	q.push(msg);
+	q.second.push(msg);
       }
     }
 
     /**
      * @brief Empty the subscriber's mailbox
      *
-     * @param subscriber_id -- the owner. 
+     * @param subs -- identifies the subscription we're clearing
      */
-    void clear(int subscriber_id) {
+    void clear(Subscription & subs) {
       std::lock_guard<std::mutex> lock(mtx);      
-      if(message_queues.size() <= subscriber_id) {
-	throw MailBoxMissingSubscriber(this->name, "clear()", subscriber_id);	
-      }
-      else {
-	while(!message_queues[subscriber_id].empty()) {
-	  message_queues[subscriber_id].pop_front();
-	}
-      }
+      auto mqueue = getQueue(subs);
+      while(!mqueue.empty()) mqueue.pop_front();
     }
 
-  /**
-   * @brief Catch this when you don't care why the MailBox threw an exception
-   */
-  class MailBoxException : public SoDa::Exception {
-  public:
-    MailBoxException(std::string name, const std::string & problem) :
-      SoDa::Exception("SoDa::MailBox[" + name + "] " + problem) {
+    void unsubscribe(int subid) {
+      std::lock_guard<std::mutex> lock(mtx);
+      auto mqueue = getQueue(subid);
+      while(!mqueue.empty()) mqueue.pop();
+      // now remove our entry from the message queues.
+      message_queues.erase(subid);
     }
-  }; 
-  
-  /**
-   * @brief The subscriber ID was invalid. 
-   */
-  class MailBoxMissingSubscriber : public MailBoxException {
-  public:
-    MailBoxMissingSubscriber(std::string name, const std::string & operation, int sub_id) :
-      MailBoxException(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
-    }
-  }; 
-    
   protected:
     std::string name;
-    std::vector<std::queue<std::shared_ptr<T>>> message_queues; 
+    std::map<int, std::queue<std::shared_ptr<T>>> message_queues; 
+    int subscription_counter; 
+
+    std::queue<std::shared_ptr<T>> & getQueue(int idx) {
+      if(message_queues.count(idx) == 0) {
+	throw MissingSubscriber(getName(), "get()", idx);
+      }
+      return message_queues[idx];       
+    }
+    
+    std::queue<std::shared_ptr<T>> & getQueue(Subscription & subs) {
+      int idx = subs->getIndex(this);
+      return getQueue(idx);
+    }
 
     // mutual exclusion stuff
     std::mutex mtx; 
+
+
+
   };
+  
 
 
-    /**
-     * @brief Make a mailbox and return a shared pointer to it. 
-     *
-     * This is a safer way of creating mailboxes, as it ensures that
-     * the mailbox will live even after it "goes out of scope" in the
-     * thing that created the mailbox and spawned the threads that use
-     * it. Sure we could rely on good behavior, but why? 
-     *
-     * @param mname Name of the mailbox. 
-     * @returns shared pointer to a Mailbox object
-     */ 
-  template<typename T>
-  std::shared_ptr<MailBox<T>> makeMailBox(const std::string & mname) {
-    return std::make_shared<MailBox<T>>(mname);
-  }
+  /**
+   * @brief Make a mailbox and return a shared pointer to it. 
+   *
+   * This is a safer way of creating mailboxes, as it ensures that
+   * the mailbox will live even after it "goes out of scope" in the
+   * thing that created the mailbox and spawned the threads that use
+   * it. Sure we could rely on good behavior, but why? 
+   *
+   * @param mname Name of the mailbox. 
+   * @returns shared pointer to a Mailbox object
+   */ 
+    template<typename T>
+    std::shared_ptr<MailBox<T>> makeMailBox(const std::string & mname) {
+      return std::make_shared<MailBox<T>>(mname);
+    }
   
 }
 

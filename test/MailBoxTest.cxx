@@ -35,16 +35,17 @@ unsigned int MyMsg::tot_active = 0;
 
 int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p, 
 		   int num_msgs, int num_threads, 
+		   int my_id, 
 		   std::shared_ptr<SoDa::Barrier> barrier_p) {
   //! [subscribe and wait]
-  int me = mailbox_p->subscribe();
+  auto subs = mailbox_p->subscribe();
   barrier_p->wait();
   //! [subscribe and wait]  
 
   // push some messages
   //! [send messages]
   for(int i = 0; i < num_msgs; i++) {
-    auto msg = MyMsg::makeMsg(me, i);
+    auto msg = MyMsg::makeMsg(my_id, i);
     mailbox_p->put(msg);
   }
   //! [send messages]
@@ -56,7 +57,7 @@ int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p,
   unsigned long sender_sum = 0; 
   for(int i = 0; i < num_msgs * num_threads;) {
     //! [get message]
-    auto p = mailbox_p->get(me);
+    auto p = mailbox_p->get(subs);
     if(p != nullptr) {
       i++;
       msg_sum += p->v;
@@ -70,18 +71,18 @@ int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p,
   
   if(expected_sum != msg_sum) {
     std::cerr << SoDa::Format("subscriber %0 got all %1 expected messages sum was %2 (should have been %4) sender sum was %3\n")
-    .addI(me)
+    .addI(my_id)
     .addI(totmsgs)
     .addU(msg_sum)
     .addU(sender_sum)
     .addU(expected_sum);
     return -1;
   }
-  
+
   std::shared_ptr<MyMsg> p; 
-  while((p = mailbox_p->get(me)) != nullptr) {
+  while((p = mailbox_p->get(subs)) != nullptr) {
     std::cerr << SoDa::Format("subscriber %0 got extra message from subscriber %1 : %2\n")
-      .addI(me)
+      .addI(my_id)
       .addI(p->v);
     return -1; 
   }
@@ -90,9 +91,10 @@ int objMailBoxTest(std::shared_ptr<SoDa::MailBox<MyMsg>> mailbox_p,
 
 int vectorMailBoxTest(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox_p, 
 		      int num_msgs, int num_threads,
+		      int my_id, 
 		      std::shared_ptr<SoDa::Barrier> barrier_p) {
   //! [vec subscribe and wait]
-  int me = mailbox_p->subscribe();
+  auto subs = mailbox_p->subscribe();
   barrier_p->wait();
   //! [vec subscribe and wait]  
 
@@ -100,7 +102,7 @@ int vectorMailBoxTest(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox_p
   //! [vec send messages]
   for(int i = 0; i < num_msgs; i++) {
     auto msg = std::make_shared<std::vector<int>>(100000);
-    (*msg)[2] = me;
+    (*msg)[2] = my_id;
     (*msg)[3] = i; 
     mailbox_p->put(msg);
   }
@@ -112,7 +114,7 @@ int vectorMailBoxTest(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox_p
   int msg_sum = 0;
   for(int i = 0; i < num_msgs * num_threads;) {
     //! [vec get message]
-    auto p = mailbox_p->get(me);
+    auto p = mailbox_p->get(subs);
     if(p != nullptr) {
       i++;
       auto & rp = *p;
@@ -122,14 +124,14 @@ int vectorMailBoxTest(std::shared_ptr<SoDa::MailBox<std::vector<int>>> mailbox_p
   }
 
   std::cerr << SoDa::Format("subscriber %0 got all %1 expected messages sum was %2\n")
-    .addI(me)
+    .addI(my_id)
     .addI(totmsgs)
     .addI(msg_sum);
   
   std::shared_ptr<std::vector<int>> p; 
-  while((p = mailbox_p->get(me)) != nullptr) {
+  while((p = mailbox_p->get(subs)) != nullptr) {
     std::cerr << SoDa::Format("subscriber %0 got extra message from subscriber %1 : %2\n")
-      .addI(me)
+      .addI(my_id)
       .addI((*p)[2])
       .addI((*p)[3]);
   }
@@ -159,6 +161,7 @@ int testVectorMsg(int msg_count, int num_threads) {
 				      mailbox_p, 
 				      msg_count, 
 				      num_threads, 
+				      i, 
 				      barrier_p));
   }
   //! [t1 create threads]  
@@ -196,6 +199,7 @@ int testObjMessage(int msg_count, int num_threads) {
 				      mailbox_p, 
 				      msg_count, 
 				      num_threads,
+				      i,
 				      barrier_p));
   }
   //! [create threads]  

@@ -35,8 +35,14 @@
  */
 
 /**
- * @page SoDa::NoCopy A simple std::thread barrier 
+ * @page SoDa::NoCopy A base class for non-copyable classes
  *
+ *
+ * Certain objects contain state that is "shared" or visible to
+ * multiple threads. If copied, the state in the new copy will become
+ * stale and irrelevant. (Imagine a copy of a barrier. What will a
+ * thread wait on in the copied barrier? Yes there are ways to fix
+ * this, but jeeze, let's keep it simple for once. 
  *
  */
 
