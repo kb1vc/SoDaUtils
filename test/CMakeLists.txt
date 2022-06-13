@@ -31,8 +31,13 @@ set_tests_properties(FastBarrierTest_should_timeout PROPERTIES
 
 
 add_test(NAME MailBoxTest1
-  COMMAND $<TARGET_FILE:MailBoxTest> -m 50000 -t 20 -r 10)
+  COMMAND $<TARGET_FILE:MailBoxTest> -m 500 -t 20 -r 100)
 set_tests_properties(MailBoxTest1 PROPERTIES
+  FAIL_REGULAR_EXPRESSION "subscriber")
+
+add_test(NAME MailBoxTest2
+  COMMAND $<TARGET_FILE:MailBoxTest> -m 500 -t 20 -r 100 --noecho)
+set_tests_properties(MailBoxTest2 PROPERTIES
   FAIL_REGULAR_EXPRESSION "subscriber")
 
 

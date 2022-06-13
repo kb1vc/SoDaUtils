@@ -89,6 +89,9 @@ namespace SoDa {
 	  else {
 	    // we're the first one to timout. 
 	    corrupted = true; 
+	    // set the barrier count to infinity, and wake everyone up
+	    barrier_count = 0xffffffff;
+	    cv.notify_all();
 	    throw Barrier::Timeout(*this, timeout);
 	  }
 	}

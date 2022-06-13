@@ -42,7 +42,7 @@
  */
 
 /**
- * @page SoDa::MailBox A simple thread-to-thread communication class. 
+ * @page SoDa::MailBox MailBox: A simple thread-to-thread communication class. 
  *
  * This was derived from classes originally developed for SoDaRadio.
  * The advent of smart pointer support in C++ made the old
@@ -225,7 +225,7 @@ namespace SoDa {
 	this_mbox->unsubscribe(subscriber_index);
       }
 
-      int getIndex(MailBox<T> * mbox) {
+      int getIndex(MailBox<T> * mbox) const {
 	if(mbox != this_mbox) {
 	  throw SubscriptionMismatch(mbox->getName(), this_mbox->getName()); 
 	}
@@ -277,11 +277,12 @@ namespace SoDa {
      */
     std::shared_ptr<T> get(Subscription & subs) {
       std::lock_guard<std::mutex> lock(mtx);	      
-      auto mqueue = getQueue(subs); 
+      auto & mqueue = getQueue(subs); 
       if(mqueue.empty()) {
 	return nullptr;
       }
       else {
+
 	auto ret = mqueue.front();
 	mqueue.pop();
 	return ret;
@@ -294,14 +295,23 @@ namespace SoDa {
      * @param msg The message to be sent to every subscriber. Note that this 
      * is passed by value -- each subscriber will get a copy.  Shared pointers
      * work just fine. 
+     * @param subs If supplied, messages will *not* be enqueued to the sender's 
+     * message queue. 
      */
-    void put(std::shared_ptr<T> msg) {
+    void put(std::shared_ptr<T> msg, const Subscription & subs = nullptr) {
       std::lock_guard<std::mutex> lock(mtx);            
+      int omit_key = subscription_counter; // points past last allocted subscription id
+      if(subs != nullptr) {
+	omit_key = subs->getIndex(this);
+      }
       for(auto & q : message_queues) {
-	q.second.push(msg);
+	if(q.first != omit_key) {
+	  q.second.push(msg);
+	}
       }
     }
 
+    
     /**
      * @brief Empty the subscriber's mailbox
      *
@@ -309,16 +319,22 @@ namespace SoDa {
      */
     void clear(Subscription & subs) {
       std::lock_guard<std::mutex> lock(mtx);      
-      auto mqueue = getQueue(subs);
+      auto & mqueue = getQueue(subs);
       while(!mqueue.empty()) mqueue.pop_front();
     }
 
     void unsubscribe(int subid) {
       std::lock_guard<std::mutex> lock(mtx);
-      auto mqueue = getQueue(subid);
+      int subs_count = message_queues.size();       
+      auto & mqueue = getQueue(subid);
       while(!mqueue.empty()) mqueue.pop();
       // now remove our entry from the message queues.
       message_queues.erase(subid);
+    }
+
+    unsigned int subscriberCount() {
+      std::lock_guard<std::mutex> lock(mtx);      
+      return message_queues.size();
     }
   protected:
     std::string name;
@@ -339,13 +355,8 @@ namespace SoDa {
 
     // mutual exclusion stuff
     std::mutex mtx; 
-
-
-
   };
   
-
-
   /**
    * @brief Make a mailbox and return a shared pointer to it. 
    *
@@ -357,11 +368,13 @@ namespace SoDa {
    * @param mname Name of the mailbox. 
    * @returns shared pointer to a Mailbox object
    */ 
-    template<typename T>
-    std::shared_ptr<MailBox<T>> makeMailBox(const std::string & mname) {
-      return std::make_shared<MailBox<T>>(mname);
-    }
-  
+  template<typename T>
+  std::shared_ptr<MailBox<T>> makeMailBox(const std::string & mname) {
+    return std::make_shared<MailBox<T>>(mname);
+  }
+
+  template<typename T>
+  using MailBoxPtr = std::shared_ptr<MailBox<T>>;
 }
 
 

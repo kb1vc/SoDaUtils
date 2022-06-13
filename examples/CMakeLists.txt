@@ -39,4 +39,9 @@ target_link_libraries(Format_Test ${SoDaUtils_LIBRARIES})
 target_include_directories(Format_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
 
+add_executable(BarrierExample BarrierExample.cxx)
+target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES})
+target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+
+
 

@@ -9,7 +9,7 @@
 #include <chrono>
 #include <random>
 
-void threadBarrierTest(std::shared_ptr<SoDa::Barrier> bar, int trial_count, int max_duration, int my_idx) {
+void threadBarrierTest(SoDa::BarrierPtr bar, int trial_count, int max_duration, int my_idx) {
   // make the random generator
   int seed = my_idx * 234525 + 23919;  
   std::default_random_engine generator(seed);
@@ -22,10 +22,8 @@ void threadBarrierTest(std::shared_ptr<SoDa::Barrier> bar, int trial_count, int 
       auto rtime = distribution(generator);
       std::this_thread::sleep_for(std::chrono::microseconds(rtime));
 
-      // now go to the barrier
+      // now go to the barrier -- we set an absurdly short timeout
       bar->wait(std::chrono::milliseconds(100));
-      // bar->wait(0);
-      // bar->wait(std::chrono::milliseconds(0));      
     }
   }
   catch (SoDa::Exception & e) {
@@ -35,10 +33,9 @@ void threadBarrierTest(std::shared_ptr<SoDa::Barrier> bar, int trial_count, int 
 }
 
 int testBarrier(int trial_count, int num_threads, int max_duration) {
-  //! [ create the barrier ] 
-  // this will fail. 
-  auto barrier_p = SoDa::makeBarrier("test barrier", num_threads);
-  //! [ create the barrier ] 
+  //! [create the barrier] 
+  SoDa::BarrierPtr barrier_p = SoDa::makeBarrier("test barrier", num_threads);
+  //! [create the barrier] 
   
   std::cerr << "Creating threads\n";
   
