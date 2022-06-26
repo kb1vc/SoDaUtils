@@ -377,6 +377,24 @@ namespace SoDa {
 	return mqueue.size();
       }
     }
+
+    /**
+     * Return the smallest number of waiting messages in 
+     * the queue for all subscribers
+     * 
+     * @returns count of outstanding messages in the shortest
+     * subscriber queue. 
+     */
+    unsigned int minReadyCount() {
+      std::lock_guard<std::mutex> lock(mtx);	      
+      unsigned int ret = ~0;
+      for(auto q : message_queues) {
+	auto qs = q.second->size();
+	ret = (ret < qs) ? ret : qs; 
+      }
+      return ret; 
+    }
+    
     
     /**
      * @brief Empty the subscriber's mailbox
