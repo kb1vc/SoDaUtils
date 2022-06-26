@@ -360,6 +360,23 @@ namespace SoDa {
       }
     }
 
+    /**
+     * Return the number of messages in the queue for this subscriber.
+     * 
+     * @param subs each user of a mailbox must have subscribed to the mailbox. 
+     *
+     * @returns count of outstanding messages for this subscriber
+     */
+    unsigned int readyCount(Subscription & subs) {
+      std::lock_guard<std::mutex> lock(mtx);	      
+      auto & mqueue = getQueue(subs); 
+      if(mqueue.empty()) {
+	return 0;
+      }
+      else {
+	return mqueue.size();
+      }
+    }
     
     /**
      * @brief Empty the subscriber's mailbox
