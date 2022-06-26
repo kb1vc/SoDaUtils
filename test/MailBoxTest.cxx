@@ -108,7 +108,12 @@ int testObjMessage(int msg_count, int num_threads, int num_trials, bool no_echo)
   //! [create a mailbox]
   SoDa::MailBoxPtr<MyMsg> mailbox_p = SoDa::makeMailBox<MyMsg>("MessageMailbox");
   //! [create a mailbox]
- 
+
+  // Just testing the pointer conversion to make sure we can build
+  // tables of mailboxes that do the right thing. 
+  std::shared_ptr<SoDa::MailBoxBase> mb_p = mailbox_p;
+  SoDa::MailBoxPtr<MyMsg> nmm_p = SoDa::MailBoxBase::convert<SoDa::MailBox<MyMsg>>(mb_p);
+
   //! [create a barrier]
   // each thread will wait at the barrier until everyone has finished
   // subscribing.
@@ -123,7 +128,7 @@ int testObjMessage(int msg_count, int num_threads, int num_trials, bool no_echo)
   //! [create threads]
   for(int i = 0; i < num_threads; i++) {
     threads.push_back(new std::thread(objMailBoxTest,
-				      mailbox_p, 
+				      mailbox_p,
 				      msg_count, 
 				      num_threads,
 				      i,
@@ -143,6 +148,31 @@ int testObjMessage(int msg_count, int num_threads, int num_trials, bool no_echo)
   return 0;
 }
 
+void testMBoxConversion() {
+  SoDa::MailBoxPtr<MyMsg> mailbox_p = SoDa::makeMailBox<MyMsg>("MessageMailbox");
+
+  // Just testing the pointer conversion to make sure we can build
+  // tables of mailboxes that do the right thing. 
+  std::shared_ptr<SoDa::MailBoxBase> mb_p = mailbox_p;
+  SoDa::MailBoxPtr<MyMsg> nmm_p = SoDa::MailBoxBase::convert<SoDa::MailBox<MyMsg>>(mb_p);
+  
+  // now make sure we get a conversion failure if we try to convert to the
+  // wrong kind of mailbox
+  bool found_problem = false; 
+  try {
+    SoDa::MailBoxPtr<int> nmmp = SoDa::MailBoxBase::convert<SoDa::MailBox<int>>(mb_p);
+  }
+  catch (SoDa::MailBoxBase::Exception & e) {
+    std::cerr << e.what() << "\n";
+    found_problem = true;
+  }
+
+  if(!found_problem) {
+    std::cerr << "testMBoxConversion: bad pointer conversion did not throw an exception\n";
+    exit(-1);
+  }
+}
+
 int main(int argc, char ** argv) {
   // create a mailbox
   SoDa::Options cmd;
@@ -157,6 +187,8 @@ int main(int argc, char ** argv) {
 
   if(!cmd.parse(argc, argv)) exit(-1);
 
+  testMBoxConversion();
+  
   // std::cerr << "test 1\n";
   // testVectorMsg(msg_count, num_threads);
   

@@ -4,6 +4,9 @@
 #include <queue>
 #include <memory>
 #include <mutex>
+#include <typeinfo>
+#include <cxxabi.h>
+
 #include "Format.hxx"
 #include "Exception.hxx"
 #include "NoCopy.hxx"
@@ -125,18 +128,17 @@
  * out of scope, the reference count for the message is
  * decreased. When the last subscriber has read and disposed of the
  * message (by setting the pointer to nullptr or just letting it go
-	    * out of scope) the storage for the message will be reclaimed (the
-									   * message will be destroyed.)
-									   * 
-									   * Because of this mechanism, if one of the subscribers to a mailbox
-									   * stops reading the mail (calling '''get''') that subscriber's
-									   * mailbox will grow, filling with unread messages. The other
-									   * subscribers will proceed unimpeeded, but the waiting messages take
-									   * up storage and can't be freed until the laggard subscriber catches
-									   * up.
-									   *
-									   * 
-									   */
+ * out of scope) the storage for the message will be reclaimed (the
+ * message will be destroyed.)
+ * 
+ * Because of this mechanism, if one of the subscribers to a mailbox
+ * stops reading the mail (calling '''get''') that subscriber's
+ * mailbox will grow, filling with unread messages. The other
+ * subscribers will proceed unimpeeded, but the waiting messages take
+ * up storage and can't be freed until the laggard subscriber catches
+ * up.
+ * 
+ */
 
 /**
  * @namespace SoDa
@@ -152,12 +154,26 @@
  */
 namespace SoDa {
 
+  
+  /**
+   * @class MailBoxBase 
+   * 
+   * @brief At times we want to register multiple mailboxes and look
+   * them up by name. If we're using a map to contain the mailbox
+   * pointers, we need some way of storing a pointer without knowing
+   * what the datatype in the mailbox is going to be. 
+   */
+  class MailBoxBase {
+  public:
+    MailBoxBase(const std::string name) : name(name) { }
+    virtual ~MailBoxBase() = default;
+
   /**
    * @brief Catch this when you don't care why the MailBox threw an exception
    */
-  class MailBoxException : public SoDa::Exception {
+  class Exception : public SoDa::Exception {
   public:
-    MailBoxException(std::string name, const std::string & problem) :
+    Exception(std::string name, const std::string & problem) :
       SoDa::Exception("SoDa::MailBox[" + name + "] " + problem) {
     }
   };
@@ -166,21 +182,59 @@ namespace SoDa {
   /**
    * @brief The subscriber ID was invalid. 
    */
-  class MissingSubscriber : public MailBoxException {
+  class MissingSubscriber : public Exception {
   public:
     MissingSubscriber(std::string name, const std::string & operation, int sub_id) :
-      MailBoxException(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
+      Exception(name, "::" + operation + " Subscriber ID " + std::to_string(sub_id) + " not found.") {
     }
   };
 
-  class SubscriptionMismatch : public MailBoxException {
+  class SubscriptionMismatch : public Exception {
   public:
     SubscriptionMismatch(const std::string & should_be
 			 , const std::string & was) : 
-      MailBoxException(should_be, SoDa::Format("caller specified the wrong mailbox")
+      Exception(should_be, SoDa::Format("caller specified the wrong mailbox")
 		       .addS(was).str()) {
     }
   }; 
+
+  class BadConversion : public Exception {
+  public:
+    BadConversion(const std::string & name, 
+		  const std::string & from_type,
+		  const std::string & to_type) : 
+      Exception(name,
+		       SoDa::Format("MailBoxBase::convert attempted to promote from %0 to %1. That isn't right.\n")
+		       .addS(from_type).addS(to_type).str()) {
+    }
+  }; 
+    
+    template<typename T>
+    static std::shared_ptr<T> convert(std::shared_ptr<MailBoxBase> p)
+    {
+      auto ret = std::dynamic_pointer_cast<T>(p);
+      if(ret == nullptr) {
+	int st1, st2; 
+	// this demangling is pretty dicey... 
+	throw BadConversion(p->name, abi::__cxa_demangle(typeid(p).name(), 
+						nullptr, nullptr, &st1), 
+			    abi::__cxa_demangle(typeid(ret).name(), 
+						nullptr, nullptr, &st2));
+      }
+      return ret; 
+    }
+
+    /**
+     * @brief What is the name of this mailbox? 
+     * @return the name.
+     */
+    const std::string & getName() const { return name; }
+    
+    std::string name;
+
+    
+  }; 
+
   
   /**
    * @class MailBox<T>
@@ -189,7 +243,7 @@ namespace SoDa {
    * @tparam T Type of message that will be found in this mailbox
    */
   template<typename T>
-  class MailBox : public NoCopy {
+  class MailBox : public MailBoxBase, NoCopy {
   public:
     /**
      * @brief Create a mailbox. All mailboxes can put and get 
@@ -202,7 +256,7 @@ namespace SoDa {
      * Each subscriber gets  message queue.  It is up to the subscriber
      * to "read the mail"
      */
-    MailBox(std::string name) : name(name) {
+    MailBox(std::string name) : MailBoxBase(name) {
       subscription_counter = 0; 
     }
 
@@ -262,11 +316,6 @@ namespace SoDa {
       return ret;
     }
 
-    /**
-     * @brief What is the name of this mailbox? 
-     * @return the name.
-     */
-    const std::string & getName() const { return name; }
 
     /**
      * Get an object out of the mailbox for this subscriber
@@ -337,7 +386,6 @@ namespace SoDa {
       return message_queues.size();
     }
   protected:
-    std::string name;
     std::map<int, std::queue<std::shared_ptr<T>>> message_queues; 
     int subscription_counter; 
 
@@ -375,6 +423,7 @@ namespace SoDa {
 
   template<typename T>
   using MailBoxPtr = std::shared_ptr<MailBox<T>>;
+
 }
 
 
