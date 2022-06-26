@@ -100,7 +100,9 @@ int objMailBoxTest(SoDa::MailBoxPtr<MyMsg> mailbox_p,
       .addI(p->v);
       return -1; 
   }
-  return 0; 
+  
+  
+  return mailbox_p->minReadyCount(); 
 }
 
   
