@@ -311,10 +311,15 @@ namespace SoDa {
      * If the fmt parameter is 'X' the hexadecimal digit values a through f
      * will be printed in upper case. 
      *
-     * The width is passed along to the setw I/O manipulator, so it
-     * is no more useful than that.  If the value takes more room than 
-     * the specified width, the width parameter will be ignored and 
-     * the field will be as wide as necessary to accommodate the value. 
+     * For decimal or octal formats, The width is the setw I/O
+     * manipulator, so it is no more useful than that.  If the value
+     * takes more room than the specified width, the width parameter
+     * will be ignored and the field will be as wide as necessary to
+     * accommodate the value.
+     *
+     * For hex formats the width specified the number of digits
+     * to print. If the width is insufficient to represent the value, 
+     * the width will be ignored. 
      */
     Format & addU(unsigned long v, char fmt = 'd', 
 		  unsigned int width = 0, 
@@ -484,6 +489,18 @@ namespace SoDa {
      */
     static char separator; 
 
+  protected:
+    /**
+     * @brief convert to a 16 character hex string, then pad/remove
+     * leading zeros to fit the field. 
+     * 
+     * @param v the value to be converted
+     * @param width how many digits to print (min)
+     * @param uppercase convert string to uppercase. 
+     * @return a string that fits the purpose. 
+     */
+    std::string toHex(unsigned long v, int width = 0, bool uppercase = false);
+    
   private:
     // We need a privately declared class for fiddling with the format string.
     class FmtStringSeg {

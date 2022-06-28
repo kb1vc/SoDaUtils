@@ -177,49 +177,48 @@ namespace SoDa {
     return * this; 
   }
 
+  
   Format & Format::addU(unsigned long v, char fmt, unsigned int w,
 			char sep,
 			unsigned int group_count)
 {
     std::stringstream ss;
     std::stringstream pre_ss;
+    std::string result; 
+    std::string valstr; 
 
-    auto radhint = std::dec;
+
     std::string prefix("");
     switch(fmt) {
     case 'x':
     case 'X':       
-      radhint = std::hex;
+      valstr = toHex(v, w, (fmt == 'X'));
       prefix = "0x";
       break;
-    case 'o': radhint = std::oct;
+    case 'o': 
+      if(w != 0) pre_ss << std::setw(w);
+      pre_ss << std::oct << v; 
+      valstr = pre_ss.str();
       prefix = "0";
       break;
     default:
-      radhint = std::dec;
+      if(w != 0) pre_ss << std::setw(w);
+      pre_ss << std::dec << v; 
+      valstr = pre_ss.str();
+      prefix = "0";
       break; 
     }
 
-    if(w != 0) {
-      unsigned int nw = (w > prefix.size()) ? (w - prefix.size()) : w;
-      ss << std::setw(nw); 
-    }
-
     if(sep == '\000') {
-      if(fmt == 'X') pre_ss << std::uppercase;
-      pre_ss << radhint <<  v;
-      ss << (prefix + pre_ss.str());      
+      result = (prefix + valstr);
     }
     else {
       std::stringstream new_ss;
-      if(fmt == 'X') new_ss << std::uppercase;      
-      new_ss << radhint << v; 
-      std::string vstr(new_ss.str());
       int i = 0;
-      std::reverse(vstr.begin(), vstr.end());
+      std::reverse(valstr.begin(), valstr.end());
       std::string newstr; 
 
-      for(char c : vstr) {
+      for(char c : valstr) {
 	if(i == group_count) {
 	  newstr = sep + newstr; 
 	  i = 0; 
@@ -227,14 +226,50 @@ namespace SoDa {
 	newstr = c + newstr;
 	i++; 
       }
-      newstr = prefix + newstr; 
-      ss << newstr;
+      result = prefix + newstr; 
     }
 
     
-    insertField(ss.str());     
+    insertField(result);
     return *this;     
   }
+
+  std::string Format::toHex(unsigned long v, int width, bool uppercase) {
+    // first build the string
+    std::string ret;
+
+    unsigned long mask;
+    if((width == 0) || (width == 16)) {
+      mask = ~0L;
+    }
+    else {
+      mask = ~((~0L) << (width * 4));
+    }
+
+    unsigned long nv = v & mask;
+    if(nv != v) nv = v; 
+    
+    char alpha_char = (uppercase ? 'A' : 'a');
+    int dcount = 0; 
+    for(int i = 0; i < 64; i += 4) {
+      char c = (nv & 0xf);
+      if(c < 10) {
+	c = '0' + c;
+      }
+      else {
+	c = alpha_char + (c - 10); 
+      }
+      ret.insert(0, 1, c);
+      dcount++;
+      
+      nv = nv >> 4; 
+      
+      if((nv == 0) && ((width == 0) || (dcount >= width))) break; 
+    }
+
+    return ret; 
+  }
+
   
   int log1k(double v, double & v_norm, int sig_digs) {
     int ret = 0;

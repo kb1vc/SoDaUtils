@@ -9,7 +9,10 @@ set(TST_FMT_SRCS
 
 
 add_executable(FormatTest ${TST_FMT_SRCS})
-      
+
+add_executable(FormatHexTest  FormatHexTest.cxx)
+target_link_libraries(FormatHexTest sodautils)
+
 add_executable(MailBoxTest MailBoxTest.cxx)
 target_link_libraries(MailBoxTest sodautils)
 
@@ -43,4 +46,7 @@ set_tests_properties(MailBoxTest2 PROPERTIES
 
 add_test(NAME FastFormatTest 
   COMMAND $<TARGET_FILE:FormatTest>)
+
+add_test(NAME FormatHexTest 
+  COMMAND $<TARGET_FILE:FormatHexTest>)
 
