@@ -14,10 +14,10 @@ add_executable(FormatHexTest  FormatHexTest.cxx)
 target_link_libraries(FormatHexTest sodautils)
 
 add_executable(MailBoxTest MailBoxTest.cxx)
-target_link_libraries(MailBoxTest sodautils)
+target_link_libraries(MailBoxTest sodautils Threads::Threads)
 
 add_executable(BarrierTest BarrierTest.cxx)
-target_link_libraries(BarrierTest sodautils)
+target_link_libraries(BarrierTest sodautils Threads::Threads)
 
 enable_testing()
 

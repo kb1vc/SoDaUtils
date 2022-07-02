@@ -12,6 +12,7 @@ set(UTILS_SRCS
 
 add_library(sodautils STATIC ${UTILS_SRCS})
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
+target_link_libraries(sodautils Threads::Threads)
 
 install(TARGETS sodautils DESTINATION ${LIBDIR})
 

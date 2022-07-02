@@ -7,6 +7,8 @@ ENDIF()
 
 PROJECT(SoDaUtilsExample)
 
+FIND_PACKAGE(Threads REQUIRED)
+
 # optimizations
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
@@ -40,7 +42,7 @@ target_include_directories(Format_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
 
 add_executable(BarrierExample BarrierExample.cxx)
-target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES})
+target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES} Threads::Threads)
 target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
 

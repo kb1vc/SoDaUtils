@@ -12,6 +12,7 @@ ENDIF()
 
 PROJECT(SoDaUtils)
 
+FIND_PACKAGE(Threads REQUIRED)
 INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
