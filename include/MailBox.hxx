@@ -404,7 +404,7 @@ namespace SoDa {
     void clear(Subscription & subs) {
       std::lock_guard<std::mutex> lock(mtx);      
       auto & mqueue = getQueue(subs);
-      while(!mqueue.empty()) mqueue.pop_front();
+      while(!mqueue.empty()) mqueue.pop();
     }
 
     void unsubscribe(int subid) {
