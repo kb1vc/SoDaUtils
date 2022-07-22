@@ -14,12 +14,12 @@ add_library(sodautils STATIC ${UTILS_SRCS})
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 target_link_libraries(sodautils Threads::Threads)
 
-install(TARGETS sodautils DESTINATION ${LIBDIR})
+install(TARGETS sodautils DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # Export header files that are required to build loadable modules
 
 install(DIRECTORY ../include/
-		  DESTINATION "include/SoDa"
+		  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa"
 		  FILES_MATCHING PATTERN "*.hxx")
 
 

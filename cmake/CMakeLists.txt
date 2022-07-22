@@ -8,5 +8,4 @@ CONFIGURE_FILE (
 INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaUtils")
 INSTALL(FILES SoDaUtilsConfig.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaUtils")
 
-#INSTALL(FILES FindSoDaUtils.cmake DESTINATION "lib/cmake/SoDaUtils")
 
