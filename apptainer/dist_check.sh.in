@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for platform in Fedora37 Ubuntu20r04
+do	       
+  sudo apptainer build  ${platform}.sif @CMAKE_CURRENT_SOURCE_DIR@/${platform}.def
+  apptainer run --bind @PROJECT_SOURCE_DIR@:/mnt ${platform}.sif 
+  rm ${platform}.sif
+done

@@ -10,6 +10,9 @@ set(TST_FMT_SRCS
 
 add_executable(FormatTest ${TST_FMT_SRCS})
 
+add_executable(FormatNaN FormatNaN.cxx ../src/Format.cxx)
+
+
 add_executable(FormatHexTest  FormatHexTest.cxx)
 target_link_libraries(FormatHexTest sodautils)
 
@@ -49,4 +52,8 @@ add_test(NAME FastFormatTest
 
 add_test(NAME FormatHexTest 
   COMMAND $<TARGET_FILE:FormatHexTest>)
+
+
+add_test(NAME FormatNaN 
+  COMMAND $<TARGET_FILE:FormatNaN>)
 

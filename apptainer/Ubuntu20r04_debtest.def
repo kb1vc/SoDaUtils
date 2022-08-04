@@ -1,0 +1,14 @@
+Bootstrap: docker
+From: ubuntu:20.04
+%files
+SoDaUtils_2.2.0_5.17.11-300.fc36.x86_64.deb
+
+%post
+  apt -qy update  
+  apt -qy install cmake
+  apt install -y pkg-config
+  apt install -y g++ 
+  apt install -y   ./SoDaUtils_2.2.0_5.17.11-300.fc36.x86_64.deb  
+ 
+  
+ 

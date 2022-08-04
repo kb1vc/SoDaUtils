@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: fedora:37
+%post
+ dnf group install --assumeyes "C Development Tools and Libraries"
+ dnf install --assumeyes cmake
+ dnf install --assumeyes rpm-build
+
+%runscript
+  # we're running in the build directory -- create a sub-build
+  cd /mnt/build
+  mkdir -p Fedora37-build
+  cd Fedora37-build
+  pwd
+  cmake -DBUILD_RPM=1 -DCMAKE_INSTALL_PREFIX=/usr ../../
+  make
+  ctest
+  make package
+
+ 
+%help
+  This builds SoDaUtils, runs the tests, and builds an rpm package
+
+  After creating the sif file, do this:
+  ./Fedora37.sif
+  
+
+  

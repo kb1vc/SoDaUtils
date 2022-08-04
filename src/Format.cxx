@@ -371,6 +371,15 @@ namespace SoDa {
       sd_left--;
     }
   }
+
+  static std::string pad(const std::string & s, unsigned int w) {
+    std::string ret = s;
+    while(ret.size() < w) {
+      ret.push_back(' ');
+    }
+    
+    return ret; 
+  }
   
   Format & Format::addF(double v, char fmt, unsigned int width, unsigned int significant_digits) {
     std::stringstream ss;    
@@ -382,6 +391,16 @@ namespace SoDa {
     if(width == 0) {
       width = significant_digits + 4;
     }
+
+    if(std::isnan(v)) {
+      insertField(pad("nan", width));
+      return *this;
+    }
+    else if (std::isinf(v)) {
+      insertField(pad("inf", width));
+      return *this;
+    }
+    
     switch (fmt) {
     case 'f':
       // fixed floating point format
