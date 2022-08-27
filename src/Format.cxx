@@ -392,7 +392,7 @@ namespace SoDa {
       width = significant_digits + 4;
     }
 
-    if(std::isnan(v)) {
+    if(std::isnan(v) || std::isnan(-v)) {
       insertField(pad("nan", width));
       return *this;
     }

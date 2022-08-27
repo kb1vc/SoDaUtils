@@ -381,6 +381,14 @@ posargs =
     bool isPresent(char ab_name);
 
     /**
+     * @brief return a vector of the positional arguments. 
+     *
+     * @return a reference to a const vector containing the positional arguments 
+     */
+    const std::vector<std::string> & getPosArgs();
+
+
+    /**
      * @brief return nth positional argument
      *
      * Tokens on the command line that are not apparently values to be 

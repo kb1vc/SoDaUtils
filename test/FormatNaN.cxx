@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 #include <cmath>
+#include <stdio.h>
 
 int main(int argc, char * argv[]) {
   // make sure that printing NaN or Inf does the right

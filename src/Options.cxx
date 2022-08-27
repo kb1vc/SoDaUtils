@@ -72,6 +72,10 @@ namespace SoDa {
     return os; 
   }
 
+  const std::vector<std::string> & Options::getPosArgs() {
+    return pos_arg_vec; 
+  }
+
   std::string Options::getPosArg(int idx) {
     if(idx > pos_arg_vec.size()) return std::string("");
     else return pos_arg_vec[idx]; 

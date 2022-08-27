@@ -17,7 +17,7 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
 SET(SoDaUtils_VERSION_MAJOR 2)
-SET(SoDaUtils_VERSION_MINOR 2)
+SET(SoDaUtils_VERSION_MINOR 3)
 SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
@@ -56,7 +56,8 @@ ELSE()
 ENDIF()
 	
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+# No -ffast-math because we want Format to know a NaN when it sees one. 
+SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 MESSAGE("SoDaUtils_VERSION=[${SoDaUtils_VERSION}]")
 

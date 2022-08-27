@@ -22,6 +22,9 @@ target_link_libraries(MailBoxTest sodautils Threads::Threads)
 add_executable(BarrierTest BarrierTest.cxx)
 target_link_libraries(BarrierTest sodautils Threads::Threads)
 
+add_executable(OptionsTest OptionsTest.cxx)
+target_link_libraries(OptionsTest sodautils)
+
 enable_testing()
 
 add_test(NAME FastBarrierTest 
@@ -56,4 +59,7 @@ add_test(NAME FormatHexTest
 
 add_test(NAME FormatNaN 
   COMMAND $<TARGET_FILE:FormatNaN>)
+
+add_test(NAME OptionsTestSimple 
+  COMMAND $<TARGET_FILE:OptionsTest>)
 
