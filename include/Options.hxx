@@ -237,8 +237,9 @@ posargs =
 
       // create an arg object and push it. 
       OptBase_p arg_p = std::make_shared<Opt<T>>(val, 
-					    def_val,			      
-					    doc_str, test_func, err_msg);
+						 def_val,
+						 std::is_signed<T>::value,
+						 doc_str, test_func, err_msg);
 
       registerOpt(arg_p, long_name, ab_name);
       return *this;      
@@ -253,7 +254,7 @@ posargs =
 		  const std::string & err_msg = std::string("")) {
 
       // create an arg object and push it. 
-      OptBase_p arg_p = std::make_shared<Opt<T>>(val, 
+      OptBase_p arg_p = std::make_shared<Opt<T>>(val, std::is_signed<T>::value,
 						 doc_str, test_func, err_msg);
 
       registerOpt(arg_p, long_name, ab_name);
@@ -455,8 +456,10 @@ posargs =
     public:
       OptBase(const std::string & doc_str, 
 	      const std::string & err_msg, 
+	      bool is_signed, 
 	      bool has_default = true) : 
-	doc_str(doc_str), err_msg(err_msg), has_default(has_default) {
+	doc_str(doc_str), err_msg(err_msg), 
+	is_signed(is_signed), has_default(has_default) {
 	present = false; 
       }
 
@@ -487,6 +490,7 @@ posargs =
       std::string long_name;
       char ab_name;
       bool has_default;
+      bool is_signed; 
       
     protected:
       
@@ -542,19 +546,21 @@ posargs =
     public:
       Opt(T * val,
 	  T def_val,
+	  bool is_signed, 
 	  const std::string & doc_str = std::string(""),
 	  const std::function<bool(T)> & test_func = allGood,
 	  const std::string & err_msg = std::string("")) : 
-	OptBase(doc_str, err_msg, true), val_p(val), test_func(test_func)
+	OptBase(doc_str, err_msg, is_signed, true), val_p(val), test_func(test_func)
       {
 	*val = def_val; 
       }
 
       Opt(T * val,
+	  bool is_signed, 	  
 	  const std::string & doc_str = std::string(""),
 	  const std::function<bool(T)> & test_func = allGood,
 	  const std::string & err_msg = std::string("")) : 
-	OptBase(doc_str, err_msg, false), val_p(val), test_func(test_func)
+	OptBase(doc_str, err_msg, is_signed, false), val_p(val), test_func(test_func)
       {
 	*val = T();
       }
@@ -597,7 +603,7 @@ posargs =
 	argvec_p->push_back(v);
 
 	present = true; 	
-	
+
 	return true; 
       }
 
@@ -609,7 +615,7 @@ posargs =
     public:
       OptPresent(bool * val,
 		 const std::string & doc_str = std::string(""))
-	: OptBase(doc_str, "") {
+	: OptBase(doc_str, "", false) {
 	*val = false; 
 	val_p = val; 
       }
@@ -652,6 +658,7 @@ posargs =
     std::vector<std::string> pos_arg_vec;
 
     bool is_kvp; 
+    bool waiting_for_signed; 
   };
   
 }

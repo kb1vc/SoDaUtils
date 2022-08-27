@@ -1,10 +1,12 @@
 #include "../include/Format.hxx"
 #include "../include/Options.hxx"
 #include <iostream>
+#include <cmath>
 
-
-int a_val;
-float f_val; 
+int si_val;
+int u_val;
+float f0_val;
+float f1_val; 
 bool b_val;
 std::string s_val;
 std::vector<std::string> s_val_list;
@@ -12,9 +14,13 @@ std::vector<int> a_val_list;
 bool pres_val;
 
 bool testPosArgs(SoDa::Options cmd) {
-  a_val = 0; 
+  si_val = 0; 
   std::list<std::string> arglist = { 
-    "--ava", "3", 
+    "--sint", "-3",
+    "--uint", "3", 
+    "--fva0", "-1.1",
+    "--fva1", "1.1",
+    
     "po0", "po1", "po2" };
 
   bool is_good = true; 
@@ -24,11 +30,23 @@ bool testPosArgs(SoDa::Options cmd) {
   }
 
   // check the aval.
-  if(a_val != 3) {
-    std::cerr << "testPosArgs bad a_val\n";
+  if(si_val != -3) {
+    std::cerr << "testPosArgs bad si_val\n";
     is_good = false;
   }
-  
+  if(u_val != 3) {
+    std::cerr << "testPosArgs bad u_val\n";
+    is_good = false;
+  }
+  if(std::fabs(f0_val + 1.1) > 1e-6) {
+    std::cerr << "testPosArgs bad f0_val\n";
+    is_good = false;
+  }
+  if(std::fabs(f1_val - 1.1) > 1e-6) {
+    std::cerr << "testPosArgs bad f1_val\n";
+    is_good = false;
+  }
+    
   if(cmd.numPosArgs() != 3) {
     std::cerr << "testPosArgs got bad arg count\n";
     is_good = false; 
@@ -70,8 +88,10 @@ int main(int argc, char ** argv) {
 
   cmd.addP(&pres_val, "pres", 'p')
     .add<bool>(&b_val, "boo", 'b')
-    .add<int>(&a_val, "ava", 'a')
-    .add<float>(&f_val, "fva", 'f')
+    .add<int>(&si_val, "sint", 'I')
+    .add<int>(&u_val, "uint", 'U')    
+    .add<float>(&f0_val, "fva0", 'f')
+    .add<float>(&f1_val, "fva1", 'F')    
     .add<std::string>(&s_val, "sva", 's')
     .addV<std::string>(&s_val_list, "sla", 'l')
     .addV<int>(&a_val_list, "ala", 'L');
