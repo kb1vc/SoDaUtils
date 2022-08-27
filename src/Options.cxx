@@ -41,6 +41,7 @@ namespace SoDa {
 
   Options::Options(bool is_kvp) : is_kvp(is_kvp) {
     // not much to do. 
+    waiting_for_signed = false; 
   }
 
   Options & Options::addInfo(const std::string & info) {
