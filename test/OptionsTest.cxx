@@ -19,9 +19,14 @@ bool testPosArgs(SoDa::Options cmd) {
     "--sint", "-3",
     "--uint", "3", 
     "--fva0", "-1.1",
-    "--fva1", "1.1",
-    
+    "--fva1", "1.1" };
+
+  std::list<std::string> poslist = {
     "po0", "po1", "po2" };
+  
+  auto tmpposlist = poslist;
+
+  arglist.merge(poslist);
 
   bool is_good = true; 
   if(!cmd.parse(arglist)) {
@@ -58,9 +63,8 @@ bool testPosArgs(SoDa::Options cmd) {
     is_good = false; 
   }
 
-  arglist.pop_front(); arglist.pop_front();
   int i = 0;
-  for(auto refa : arglist) {
+  for(auto refa : poslist) {
     auto pa = cmd.getPosArg(i); 
 
     if(pa.compare(refa) != 0) {
