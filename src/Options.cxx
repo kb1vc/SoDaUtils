@@ -41,6 +41,7 @@ namespace SoDa {
 
   Options::Options(bool is_kvp) : is_kvp(is_kvp) {
     // not much to do. 
+    waiting_for_signed = false; 
   }
 
   Options & Options::addInfo(const std::string & info) {
@@ -131,8 +132,11 @@ namespace SoDa {
   }
 
   int Options::isSwitch(const std::string & tkn) {
+    if(waiting_for_signed) return 0;
+    
     if(tkn.length() < 2) return 0;
 
+    
     // does it start with anything other than - ? 
     if(tkn[0] != '-') {
       return 0; 
@@ -192,6 +196,7 @@ namespace SoDa {
 	// a value for the previous arg_p;
 	if(arg_p != nullptr) {
 	  arg_p->setVal(tkn);
+	  waiting_for_signed = false; 
 	  arg_p = nullptr; 
 	}
 	else {
@@ -202,6 +207,7 @@ namespace SoDa {
       else {
 	if(arg_p != nullptr) {
 	  arg_p->setPresent(); 
+	  waiting_for_signed = arg_p->is_signed; 
 	}
 	
 	arg_p = nullptr;
@@ -223,6 +229,10 @@ namespace SoDa {
 
 	if(arg_p == nullptr) {
 	  throw BadOptionNameException(tkn); 
+	}
+
+	if(arg_p->is_signed) {
+	  waiting_for_signed = true; 
 	}
 
 	if(arg_p->isPresentOpt()) {
