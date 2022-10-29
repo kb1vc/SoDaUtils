@@ -197,15 +197,26 @@ namespace SoDa {
       break;
     case 'o': 
       if(w != 0) pre_ss << std::setw(w);
-      pre_ss << std::oct << v; 
-      valstr = pre_ss.str();
+      if(v != 0) {
+	pre_ss << std::oct << v; 	
+	valstr = pre_ss.str();
+      }
+      else {
+	valstr = "";
+      }
       prefix = "0";
       break;
     default:
       if(w != 0) pre_ss << std::setw(w);
       pre_ss << std::dec << v; 
       valstr = pre_ss.str();
-      prefix = "0";
+      if(v != 0) {
+	prefix = "0";	
+      }
+      else {
+	prefix = "";		
+      }
+
       break; 
     }
 

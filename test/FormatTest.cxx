@@ -88,8 +88,11 @@ int runBigTest() {
 
 int main(int argc, char * argv[]) {
 
-  std::cerr << SoDa::Format("This is what 0 looks like [%0]\n")
-    .addF(0.0, 'e', 0, 0);
+  std::cerr << SoDa::Format("This is what 0 looks like F[%0] U[%1] I[%2] U16[%3] \n")
+    .addF(0.0, 'e', 0, 0)
+    .addU(0)
+    .addI(0)
+    .addU(0, 'X');
 
   std::cerr << SoDa::Format("Testing adjacent markers [%0%1] should be [foobar]\n")
     .addS("foo")
