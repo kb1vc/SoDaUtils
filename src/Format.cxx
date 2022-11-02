@@ -191,31 +191,24 @@ namespace SoDa {
     std::string prefix("");
     switch(fmt) {
     case 'x':
-    case 'X':       
-      valstr = toHex(v, w, (fmt == 'X'));
+    case 'X':
+    case 'h':
+    case 'H':
+      valstr = toHex(v, w, (fmt == 'X') || (fmt == 'H'));
       prefix = "0x";
       break;
     case 'o': 
-      if(w != 0) pre_ss << std::setw(w);
-      if(v != 0) {
-	pre_ss << std::oct << v; 	
-	valstr = pre_ss.str();
-      }
-      else {
-	valstr = "";
-      }
-      prefix = "0";
+    case 'O':
+      valstr = toOct(v, w); 
+      prefix = "";
       break;
+    case 'd':
+    case 'D':
     default:
       if(w != 0) pre_ss << std::setw(w);
       pre_ss << std::dec << v; 
       valstr = pre_ss.str();
-      if(v != 0) {
-	prefix = "0";	
-      }
-      else {
-	prefix = "";		
-      }
+      prefix = "";		
 
       break; 
     }
@@ -281,6 +274,44 @@ namespace SoDa {
     return ret; 
   }
 
+  std::string Format::toOct(unsigned long v, int width) {
+    // first build the string
+    std::string ret;
+
+    if(v == 0) return "0";
+    
+    unsigned long mask;
+    if((width == 0) || (width == 16)) {
+      mask = ~0L;
+    }
+    else {
+      mask = ~((~0L) << (width * 4));
+    }
+
+    unsigned long nv = v & mask;
+    if(nv != v) nv = v; 
+    
+    int dcount = 0; 
+    for(int i = 0; (i < 64) && (nv != 0); i += 3) {
+      char c = (nv & 0x7);
+      c = '0' + c;	
+      ret.insert(0, 1, c);
+      dcount++;
+      
+      nv = nv >> 3; 
+    }
+    dcount++; 
+    ret.insert(0, 1, '0');
+
+    if(width != 0) {
+      for(int i = dcount; i < width; i++) {
+	ret.insert(0, 1, ' ');
+      }
+    }
+
+    return ret; 
+  }
+  
   
   int log1k(double v, double & v_norm, int sig_digs) {
     int ret = 0;

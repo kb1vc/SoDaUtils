@@ -62,4 +62,16 @@ int main() {
   std::cout << SoDa::Format("Hard to read [%0], easy to read [%1]\n")
     .addU(lhex, 'x', 30)
     .addU(lhex, 'X', 28, '_', 4);
+  
+  unsigned int v = 0x0; 
+  std::cout << SoDa::Format("0 is decimal [%0] octal [%1] hex [%2]\n")
+    .addU(v)
+    .addU(v, 'o')
+    .addU(v, 'h');
+  
+  v = 07543;
+  std::cout << SoDa::Format("07543 is decimal [%0] octal [%1] hex [%2]\n")  
+    .addU(v)
+    .addU(v, 'o')
+    .addU(v, 'h');
 }

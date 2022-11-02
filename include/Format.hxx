@@ -500,6 +500,8 @@ namespace SoDa {
      * @return a string that fits the purpose. 
      */
     std::string toHex(unsigned long v, int width = 0, bool uppercase = false);
+
+    std::string toOct(unsigned long v, int width = 0);
     
   private:
     // We need a privately declared class for fiddling with the format string.
