@@ -7,12 +7,17 @@ set(UTILS_SRCS
 	Format.cxx
 	UtilsBase.cxx
 	Barrier.cxx
-	)
-
+)
+      
+if(yaml-cpp_FOUND)
+  list(APPEND UTILS_SRCS
+    PropertyTree.cxx    
+    PropertyTreeYAML.cxx)    
+endif()	
 
 add_library(sodautils STATIC ${UTILS_SRCS})
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
-target_link_libraries(sodautils Threads::Threads)
+target_link_libraries(sodautils Threads::Threads ${YAML_CPP_LIBRARIES})
 
 install(TARGETS sodautils DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

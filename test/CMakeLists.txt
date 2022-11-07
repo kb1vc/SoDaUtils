@@ -25,6 +25,9 @@ target_link_libraries(BarrierTest sodautils Threads::Threads)
 add_executable(OptionsTest OptionsTest.cxx)
 target_link_libraries(OptionsTest sodautils)
 
+add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
+target_link_libraries(PropertyTreeYAML_Test sodautils)
+
 enable_testing()
 
 add_test(NAME FastBarrierTest 
@@ -63,3 +66,7 @@ add_test(NAME FormatNaN
 add_test(NAME OptionsTestSimple 
   COMMAND $<TARGET_FILE:OptionsTest>)
 
+if(yaml-cpp_FOUND) 
+  add_test(NAME PropertyTreeYAMLTest1
+    COMMAND $<TARGET_FILE:PropertyTreeYAML_Test> ${CMAKE_CURRENT_LIST_DIR}/test1.yaml)
+endif()

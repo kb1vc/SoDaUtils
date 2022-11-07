@@ -1,6 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
 
-
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
@@ -13,11 +12,15 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
+
+FIND_PACKAGE(yaml-cpp)
+
+
 INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
 SET(SoDaUtils_VERSION_MAJOR 2)
-SET(SoDaUtils_VERSION_MINOR 4)
+SET(SoDaUtils_VERSION_MINOR 5)
 SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
@@ -94,13 +97,12 @@ CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/version.hxx.in"
   "${PROJECT_BINARY_DIR}/UtilsVersion.hxx")
 
 
-INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include ${YAML_CPP_INCLUDE_DIR})
 
 INSTALL(FILES ${PROJECT_BINARY_DIR}/UtilsVersion.hxx DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa")
 
 # The library sources
 ADD_SUBDIRECTORY(cmake)
-
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(test)
 

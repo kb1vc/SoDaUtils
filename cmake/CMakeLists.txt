@@ -1,5 +1,5 @@
 
-CONFIGURE_FILE (
+CONFIGURE_FILE(
   SoDaUtilsConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
   @ONLY
