@@ -7,11 +7,12 @@ bool testFmt(unsigned long v, int w, char fmt_type, const std::string & pat, cha
   std::string res = SoDa::Format("%0").addU(v, fmt_type, w, sep).str(); 
   
   if (res != pat) {
-    std::cerr << SoDa::Format("Bad match: v = %0, w = %1, res = [%2] pattern = [%3]\n")
+    std::cerr << SoDa::Format("Bad match: v = %0, w = %1, res = [%2] pattern = [%3] type %4\n")
       .addU(v, 'X')
       .addI(w)
       .addS(res)
-      .addS(pat);
+      .addS(pat)
+      .addC(fmt_type);
     return false; 
   }
   
@@ -22,7 +23,8 @@ int main(int argc, char * argv[]) {
   
   std::map<std::string, std::pair<unsigned long, int>> hex_check_map = 
     { { "0x0", { 0, 0 } }, 
-      { "0x000", { 0, 3} }, 
+      { "0x000", { 0, 3} },
+      { "0x0000", { 0, 4} },       
       { "0x100", { 0x100, 0} },
       { "0x0100", { 0x100, 4 } },
       { "0x00000100", { 0x100, 8 } },
@@ -39,11 +41,11 @@ int main(int argc, char * argv[]) {
     };
   std::map<std::string, std::pair<unsigned long, int>> oct_check_map = 
     { { "0", { 0, 0 } }, 
-      { "  0", { 0, 3} }, 
+      { "000", { 0, 3} }, 
       { "0137", { 0137, 0} },
       { "0137", { 0137, 4 } },
-      { "    0137", { 0137, 8 } },
-      { "            0137", { 0137, 16 } }            
+      { "00000137", { 0137, 8 } },
+      { "0000000000000137", { 0137, 16 } }            
     };
   
   

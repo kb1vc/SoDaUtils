@@ -186,7 +186,8 @@ namespace SoDa {
     std::stringstream pre_ss;
     std::string result; 
     std::string valstr; 
-
+    bool not_hex = true; 
+    bool not_oct = true; 
 
     std::string prefix("");
     switch(fmt) {
@@ -195,12 +196,14 @@ namespace SoDa {
     case 'h':
     case 'H':
       valstr = toHex(v, w, (fmt == 'X') || (fmt == 'H'));
-      prefix = "0x";
+      prefix = "";
+      not_hex = false; 
       break;
     case 'o': 
     case 'O':
       valstr = toOct(v, w); 
       prefix = "";
+      not_oct = false;       
       break;
     case 'd':
     case 'D':
@@ -221,14 +224,24 @@ namespace SoDa {
       int i = 0;
       std::reverse(valstr.begin(), valstr.end());
       std::string newstr; 
-
+      
+      int cc = 0; 
+      int sep_lim = valstr.size();
+      
+      if(!not_hex) {
+	sep_lim -= 2; 
+      }
+      else if(!not_oct) {
+	sep_lim -= 1; 
+      }
       for(char c : valstr) {
-	if(i == group_count) {
+	if((i == group_count) && (cc < sep_lim)) {
 	  newstr = sep + newstr; 
 	  i = 0; 
 	}
 	newstr = c + newstr;
 	i++; 
+	cc++;
       }
       result = prefix + newstr; 
     }
@@ -241,74 +254,25 @@ namespace SoDa {
   std::string Format::toHex(unsigned long v, int width, bool uppercase) {
     // first build the string
     std::string ret;
-
-    unsigned long mask;
-    if((width == 0) || (width == 16)) {
-      mask = ~0L;
+    std::stringstream ss;
+    if(uppercase) {
+      ss << std::uppercase; 
     }
-    else {
-      mask = ~((~0L) << (width * 4));
-    }
-
-    unsigned long nv = v & mask;
-    if(nv != v) nv = v; 
+    ss << "0x"; 
+    ss << std::right << std::setfill('0');
+    ss << std::setw(width) << std::hex  << v;
+    ret = ss.str();
     
-    char alpha_char = (uppercase ? 'A' : 'a');
-    int dcount = 0; 
-    for(int i = 0; i < 64; i += 4) {
-      char c = (nv & 0xf);
-      if(c < 10) {
-	c = '0' + c;
-      }
-      else {
-	c = alpha_char + (c - 10); 
-      }
-      ret.insert(0, 1, c);
-      dcount++;
-      
-      nv = nv >> 4; 
-      
-      if((nv == 0) && ((width == 0) || (dcount >= width))) break; 
-    }
-
     return ret; 
   }
 
   std::string Format::toOct(unsigned long v, int width) {
-    // first build the string
     std::string ret;
-
-    if(v == 0) return "0";
-    
-    unsigned long mask;
-    if((width == 0) || (width == 16)) {
-      mask = ~0L;
-    }
-    else {
-      mask = ~((~0L) << (width * 4));
-    }
-
-    unsigned long nv = v & mask;
-    if(nv != v) nv = v; 
-    
-    int dcount = 0; 
-    for(int i = 0; (i < 64) && (nv != 0); i += 3) {
-      char c = (nv & 0x7);
-      c = '0' + c;	
-      ret.insert(0, 1, c);
-      dcount++;
-      
-      nv = nv >> 3; 
-    }
-    dcount++; 
-    ret.insert(0, 1, '0');
-
-    if(width != 0) {
-      for(int i = dcount; i < width; i++) {
-	ret.insert(0, 1, ' ');
-      }
-    }
-
+    std::stringstream ss;
+    ss.setf(std::ios::showbase);
+    ss << std::right << std::setfill('0');    
+    ss << std::setw(width) << std::oct << v; 
+    ret = ss.str();
     return ret; 
   }
   

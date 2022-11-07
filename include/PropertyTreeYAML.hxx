@@ -35,13 +35,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * @file PropTreeYAML.hxx
+ * @file PropertyTreeYAML.hxx
  * @author Matt Reilly (kb1vc)
  * @date December 31, 2020
  */
 
 /**
- * @page SoDa::PropTreeYAML A simple property tree widget built from a
+ * @page SoDa::PropertyTreeYAML A simple property tree widget built from a
  * YAML file.   
  *
  * This inherits the storage and retrieval methods from PropTree.
