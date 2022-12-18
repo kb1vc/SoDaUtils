@@ -78,6 +78,9 @@ int main(int argc, char * argv[])
     std::cout << "\t[" << sa << "]\n";
   }
 
+  for(int i = 0; i < argc; i++) {
+    std::cout << "ARG[" << i << "] = [" << argv[i] << "]\n";
+  }
   std::cerr << (cmd.isPresent("intarg") ? "An" : "No") << " intarg option was present\n";
   
   std::cout << "posargs = \n";

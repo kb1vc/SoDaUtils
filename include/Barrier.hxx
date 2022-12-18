@@ -236,7 +236,6 @@ namespace SoDa {
      * immediately. I think it is treating count() as a signed
      * integer.. dunno.
      * 
-     * @return true if all reached the barrier
      * before the timeout, false otherwise.
      */
     void wait(const std::chrono::duration<long, std::milli> & timeout); 
@@ -255,19 +254,19 @@ namespace SoDa {
   };
 
 
-    /**
-     * @brief Make a barrier and return a shared pointer to it. 
-     *
-     * This is a safer way of creating barrier, as it ensures that
-     * the barrier will live even after it "goes out of scope" in the
-     * thing that created the it and spawned the threads that use
-     * it. Sure we could rely on good behavior, but why? 
-     *
-     * @param name Name of the barrier
-     * @param num_waiters number of threads that will wait at this barrier.
-     * @returns shared pointer to a barrier object
-    */ 
-  typedef std::shared_ptr<Barrier> BarrierPtr;
+  typedef std::shared_ptr<Barrier> BarrierPtr;  
+  /**
+   * @brief Make a barrier and return a shared pointer to it. 
+   *
+   * This is a safer way of creating barrier, as it ensures that
+   * the barrier will live even after it "goes out of scope" in the
+   * thing that created the it and spawned the threads that use
+   * it. Sure we could rely on good behavior, but why? 
+   *
+   * @param name Name of the barrier
+   * @param num_waiters number of threads that will wait at this barrier.
+   * @returns shared pointer to a barrier object
+   */ 
   
   std::shared_ptr<Barrier> makeBarrier(const std::string & name, unsigned int num_waiters);
 }

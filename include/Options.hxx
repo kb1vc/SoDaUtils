@@ -150,8 +150,8 @@ posargs =
    */
   class BadOptionNameException : public std::runtime_error {
   public:
-    BadOptionNameException(const std::string & tkn) : std::runtime_error("Command option \"" + tkn + "\" is unknown.") {
-    }
+    BadOptionNameException(const std::string & tkn) : std::runtime_error("Command option [[" + tkn + "]] is unknown.") {
+    } 
   }; 
 
   /**

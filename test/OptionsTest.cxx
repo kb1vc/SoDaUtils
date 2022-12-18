@@ -19,7 +19,8 @@ bool testPosArgs(SoDa::Options cmd) {
     "--sint", "-3",
     "--uint", "3", 
     "--fva0", "-1.1",
-    "--fva1", "1.1" };
+    "--fva1", "1.1",
+    "--sva", "\"--this is a test\""};
 
   std::list<std::string> poslist = {
     "po0", "po1", "po2" };
@@ -34,6 +35,7 @@ bool testPosArgs(SoDa::Options cmd) {
     is_good = false; 
   }
 
+  std::cerr << "s_val = [" << s_val << "]\n";
   // check the aval.
   if(si_val != -3) {
     std::cerr << "testPosArgs bad si_val\n";
@@ -100,9 +102,20 @@ int main(int argc, char ** argv) {
     .addV<std::string>(&s_val_list, "sla", 'l')
     .addV<int>(&a_val_list, "ala", 'L');
 
-  bool is_good = true; 
-  is_good = is_good && testPosArgs(cmd); 
+
+  bool is_good = true;
+  std::cout << "argc = " << argc << "\n";
+  if(argc < 2) {
+    std::cout << "We are in here.\n";
+    is_good = is_good && testPosArgs(cmd); 
+  }  
+  else {
+    std::cout << "Why are we here?\n";
+    cmd.parse(argc, argv);
+    std::cout << "!!!! s_val = ??? [" << s_val << "]\n";
+  }
   
   if(is_good) std::cout << "PASS\n";
   else std::cout << "FAIL\n";
 }
+ 
