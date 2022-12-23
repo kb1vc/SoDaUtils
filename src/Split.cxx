@@ -85,5 +85,18 @@ namespace SoDa {
     }
 
     return ret; 
-  }  
+  }
+
+  std::vector<std::string> splitVec(const std::string & str, const std::string delims, bool no_empty) {
+    std::vector<std::string> ret; 
+    
+    auto tres = split(str, delims, no_empty);
+    
+    for(auto s : tres) {
+      ret.push_back(s);
+    }
+
+    return ret; 
+  }
+  
 }

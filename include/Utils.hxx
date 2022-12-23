@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 #include <list>
+#include <vector>
 
 namespace SoDa {
 
@@ -65,7 +66,7 @@ namespace SoDa {
   std::string squashSpaces(const std::string & str);
   
   /**
-   * @brief split a string into a vector of strings, based on a set 
+   * @brief split a string into a list of strings, based on a set 
    * of delimiter characters. 
    *
    *
@@ -76,5 +77,21 @@ namespace SoDa {
    * (e.g. foo,,bar will produce {foo,bar} not {"foo", "", "bar"})
    * @returns a list of tokens split by the delimiters. 
    */
-  std::list<std::string> split(const std::string & str, const std::string delims, bool no_empty = false); 
+  std::list<std::string> split(const std::string & str, const std::string delims, bool no_empty = false);
+
+  /**
+   * @brief split a string into a vector of strings, based on a set 
+   * of delimiter characters. 
+   *
+   *
+   * 
+   * @param str the string to be chopped up into tokens
+   * @param delims a list of delimiter characters
+   * @param no_empty if true, empty tokens will not be saved 
+   * (e.g. foo,,bar will produce {foo,bar} not {"foo", "", "bar"})
+   * @returns a vector of tokens split by the delimiters. 
+   */
+  std::vector<std::string> splitVec(const std::string & str, const std::string delims, bool no_empty = false);
+
+
 }
