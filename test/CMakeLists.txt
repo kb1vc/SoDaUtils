@@ -12,6 +12,8 @@ add_executable(FormatTest ${TST_FMT_SRCS})
 
 add_executable(FormatNaN FormatNaN.cxx ../src/Format.cxx)
 
+add_executable(SplitTest SplitTest.cxx)
+target_link_libraries(SplitTest sodautils)
 
 add_executable(FormatHexTest  FormatHexTest.cxx)
 target_link_libraries(FormatHexTest sodautils)
@@ -70,3 +72,10 @@ if(yaml-cpp_FOUND)
   add_test(NAME PropertyTreeYAMLTest1
     COMMAND $<TARGET_FILE:PropertyTreeYAML_Test> ${CMAKE_CURRENT_LIST_DIR}/test1.yaml)
 endif()
+
+
+add_test(NAME SplitTest
+  COMMAND $<TARGET_FILE:SplitTest> -m 500 -t 20 -r 100)
+set_tests_properties(SplitTest PROPERTIES
+  FAIL_REGULAR_EXPRESSION "FAIL")
+

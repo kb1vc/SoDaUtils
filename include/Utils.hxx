@@ -93,5 +93,4 @@ namespace SoDa {
    */
   std::vector<std::string> splitVec(const std::string & str, const std::string delims, bool no_empty = false);
 
-
 }
