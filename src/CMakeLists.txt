@@ -16,15 +16,23 @@ if(yaml-cpp_FOUND)
 endif()	
 
 add_library(sodautils STATIC ${UTILS_SRCS})
+add_library(sodautils::sodautils ALIAS sodautils)
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 target_link_libraries(sodautils Threads::Threads ${YAML_CPP_LIBRARIES})
 
-install(TARGETS sodautils DESTINATION ${CMAKE_INSTALL_LIBDIR})
+target_include_directories(sodautils
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PRIVATE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
 
-# Export header files that are required to build loadable modules
+target_sources(sodautils
+  PRIVATE
+  ${UTILS_SRCS})
 
-install(DIRECTORY ../include/
-		  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa"
-		  FILES_MATCHING PATTERN "*.hxx")
-
-
+set_target_properties(sodautils PROPERTIES
+  VERSION ${SoDaUtils_VERSION}
+  SOVERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}"
+  PROJECT_LABEL "SoDaUtils"
+  DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")

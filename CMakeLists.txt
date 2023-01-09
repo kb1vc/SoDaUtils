@@ -15,7 +15,10 @@ FIND_PACKAGE(Threads REQUIRED)
 
 FIND_PACKAGE(yaml-cpp)
 
-
+# Automatic CMake config generation inspired from https://github.com/jbeder/yaml-cpp.git
+INCLUDE(CMakePackageConfigHelpers)
+INCLUDE(CMakeDependentOption)
+INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
@@ -102,9 +105,8 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include ${YAML_C
 INSTALL(FILES ${PROJECT_BINARY_DIR}/UtilsVersion.hxx DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa")
 
 # The library sources
-ADD_SUBDIRECTORY(cmake)
+#ADD_SUBDIRECTORY(cmake)
 ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(test)
 
 IF(NOT DISABLE_DOXYGEN)	
   FIND_PACKAGE(Doxygen QUIET)
@@ -127,4 +129,47 @@ IF(BUILD_RPM OR BUILD_DEB)
 INCLUDE(cmake/BuildPackage.cmake)
 ENDIF()
 
+
+
+# Now all the real work.
+
+
+
+
+set(CONFIG_EXPORT_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaUtils")
+set(EXPORT_TARGETS sodautils)
+
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/SoDaUtilsConfig.cmake.in"
+  "${PROJECT_BINARY_DIR}/SoDaUtilsConfig.cmake"
+  INSTALL_DESTINATION "${CONFIG_EXPORT_DIR}"
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CONFIG_EXPORT_DIR
+)
+
+unset(EXPORT_TARGETS)
+
+write_basic_package_version_file(
+  "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
+  VERSION "${SoDaUtils_VERSION}"  
+  COMPATIBILITY AnyNewerVersion)
+
+install(TARGETS sodautils
+  EXPORT sodautils-targets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  FILES_MATCHING PATTERN "*.hxx")
+install(EXPORT sodautils-targets
+  DESTINATION "${CONFIG_EXPORT_DIR}")
+install(FILES
+  "${PROJECT_BINARY_DIR}/SoDaUtilsConfig.cmake"
+  "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
+  DESTINATION "${CONFIG_EXPORT_DIR}")
+
+unset(CONFIG_EXPORT_DIR)
+
+
+add_subdirectory(test)
 ADD_SUBDIRECTORY(apptainer)
