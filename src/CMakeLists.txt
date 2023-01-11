@@ -23,7 +23,7 @@ target_link_libraries(sodautils Threads::Threads ${YAML_CPP_LIBRARIES})
 target_include_directories(sodautils
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  # $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
 

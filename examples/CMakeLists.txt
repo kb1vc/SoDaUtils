@@ -45,5 +45,9 @@ add_executable(BarrierExample BarrierExample.cxx)
 target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES} Threads::Threads)
 target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
+add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
+target_link_libraries(PropertyTreeYAML_Test ${SoDaUtils_LIBRARIES} Threads::Threads)
+target_include_directories(PropertyTreeYAML_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+
 
 
