@@ -12,7 +12,6 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
-
 FIND_PACKAGE(yaml-cpp)
 
 # Automatic CMake config generation inspired from https://github.com/jbeder/yaml-cpp.git
@@ -159,9 +158,6 @@ install(TARGETS sodautils
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  FILES_MATCHING PATTERN "*.hxx")
 install(EXPORT sodautils-targets
   DESTINATION "${CONFIG_EXPORT_DIR}")
 install(FILES

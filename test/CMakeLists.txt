@@ -27,8 +27,10 @@ target_link_libraries(BarrierTest sodautils Threads::Threads)
 add_executable(OptionsTest OptionsTest.cxx)
 target_link_libraries(OptionsTest sodautils)
 
-add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
-target_link_libraries(PropertyTreeYAML_Test sodautils)
+if(yaml-cpp_FOUND)
+  add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
+  target_link_libraries(PropertyTreeYAML_Test sodautils)
+endif()
 
 enable_testing()
 

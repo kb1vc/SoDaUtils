@@ -20,10 +20,12 @@ add_library(sodautils::sodautils ALIAS sodautils)
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 target_link_libraries(sodautils Threads::Threads ${YAML_CPP_LIBRARIES})
 
+message("CMAKE_INSTALL_INCLUDEDIR = [${CMAKE_INSTALL_INCLUDEDIR}]")
+
 target_include_directories(sodautils
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  # $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  #$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SoDa>
   PRIVATE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
 
