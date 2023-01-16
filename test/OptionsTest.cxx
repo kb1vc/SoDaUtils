@@ -12,6 +12,7 @@ std::string s_val;
 std::vector<std::string> s_val_list;
 std::vector<int> a_val_list;
 bool pres_val;
+std::string sind_val;
 
 bool testPosArgs(SoDa::Options cmd) {
   si_val = 0; 
@@ -20,7 +21,10 @@ bool testPosArgs(SoDa::Options cmd) {
     "--uint", "3", 
     "--fva0", "-1.1",
     "--fva1", "1.1",
-    "--sva", "\"--this is a test\""};
+    "--sva", "\"--this is a test\"",
+    "--s-ind", "'--args=\"type=b200,serial=c00ld00d\"'"
+  };
+  
 
   std::list<std::string> poslist = {
     "po0", "po1", "po2" };
@@ -35,7 +39,6 @@ bool testPosArgs(SoDa::Options cmd) {
     is_good = false; 
   }
 
-  std::cerr << "s_val = [" << s_val << "]\n";
   // check the aval.
   if(si_val != -3) {
     std::cerr << "testPosArgs bad si_val\n";
@@ -53,7 +56,15 @@ bool testPosArgs(SoDa::Options cmd) {
     std::cerr << "testPosArgs bad f1_val\n";
     is_good = false;
   }
-    
+  if(sind_val != std::string("'--args=\"type=b200,serial=c00ld00d\"'")) {
+    std::cerr << "testPosArgs bad value for s-ind : [" << sind_val << "]\n";
+    is_good = false; 
+  }
+  
+  if(s_val != "\"--this is a test\"") {
+    std::cerr << "testPosArgs bad value for sva : [" << s_val << "]\n";
+    is_good = false; 
+  }
   if(cmd.numPosArgs() != 3) {
     std::cerr << "testPosArgs got bad arg count\n";
     is_good = false; 
@@ -99,6 +110,7 @@ int main(int argc, char ** argv) {
     .add<float>(&f0_val, "fva0", 'f')
     .add<float>(&f1_val, "fva1", 'F')    
     .add<std::string>(&s_val, "sva", 's')
+    .add<std::string>(&sind_val, "s-ind", 'c')    
     .addV<std::string>(&s_val_list, "sla", 'l')
     .addV<int>(&a_val_list, "ala", 'L');
 
