@@ -1,4 +1,6 @@
-# - Config file for the yaml-cpp package
+# - Config file for the SoDaUtils package
+# inspired/borrowed from https://github.com/jbeder/yaml-cpp.git
+#
 # It defines the following variables
 #  SoDaUtils_INCLUDE_DIR       - include directory
 #  SoDaUtils_LIBRARY_DIR       - directory containing libraries
