@@ -185,9 +185,10 @@ install(FILES
   "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
   DESTINATION "${CONFIG_EXPORT_DIR}")
 
-
+unset(CONFIG_EXPORT_DIR)
 
 if(yaml-cpp_FOUND)
+  set(CONFIG_EXPORT_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaProps")
   set(EXPORT_TARGETS sodaprops)
   write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/SoDaPropsConfigVersion.cmake"
@@ -216,7 +217,7 @@ if(yaml-cpp_FOUND)
 
 endif()
 
-unset(CONFIG_EXPORT_DIR)
+
 
 
 add_subdirectory(test)

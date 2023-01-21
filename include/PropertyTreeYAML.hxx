@@ -5,7 +5,6 @@
 #include <iostream>
 #include "Exception.hxx"
 #include "PropertyTree.hxx"
-#include <yaml-cpp/yaml.h>
 /*
 BSD 2-Clause License
 
@@ -53,6 +52,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * So, here is SoDa::PropTreeYAML -- not as good as yaml-cpp but it is
  * documented somewhat. 
  */
+
+/**
+ * We do this here so that the end user doesn't need to include any
+ * yaml headers, and in fact, yaml doesn't even need to be installed. 
+ */
+namespace YAML {
+  class Node; 
+}
 
 /**
  * @namespace SoDa
@@ -116,7 +123,6 @@ namespace SoDa {
      */
     void writeFile(const std::string & filename); 
   protected: 
-
     void fillRecurse(const YAML::Node & node, 
 		     PropertyTree::PropNode * prop);
 

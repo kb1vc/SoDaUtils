@@ -1,6 +1,7 @@
 #include "PropertyTreeYAML.hxx"
 #include <iostream>
 #include <sstream>
+#include <yaml-cpp/yaml.h>
 
 /*
 BSD 2-Clause License
