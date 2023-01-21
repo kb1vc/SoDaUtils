@@ -13,6 +13,7 @@ PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(yaml-cpp)
+message("YAML_CPP_INCLUDE_DIR [${YAML_CPP_INCLUDE_DIR}]")
 
 # Automatic CMake config generation inspired from https://github.com/jbeder/yaml-cpp.git
 INCLUDE(CMakePackageConfigHelpers)
@@ -101,8 +102,22 @@ CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/version.hxx.in"
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include ${YAML_CPP_INCLUDE_DIR})
 
+FILE(GLOB all_includes ${CMAKE_CURRENT_LIST_DIR}/include/*.hxx)
+
+if(NOT yaml-cpp_FOUND) 
+  FILE(GLOB ptree_includes ${CMAKE_CURRENT_LIST_DIR}/include/Property*.hxx)
+  message("ptree_includes = ${ptree_includes}")
+  foreach(pti IN LISTS ptree_includes)
+    message("removing [${pti}]")
+    list(REMOVE_ITEM all_includes ${pti})  
+  endforeach()
+endif()
+
 INSTALL(FILES ${PROJECT_BINARY_DIR}/UtilsVersion.hxx DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa")
-INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/ DESTINATION "${CMAKE_INSTALL_PREFIX}/include/SoDa")
+#INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/
+#  # FILES_MATCHING PATTERN "*.hxx"
+#  DESTINATION "${CMAKE_INSTALL_PREFIX}/include/SoDa")
+INSTALL(FILES ${all_includes} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SoDa")
 
 # The library sources
 #ADD_SUBDIRECTORY(cmake)
@@ -123,7 +138,10 @@ IF(NOT DISABLE_DOXYGEN)
   ENDIF()
 ENDIF()
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/SoDaUtils/examples)
+FILE(GLOB examp_files "${CMAKE_CURRENT_LIST_DIR}/examples/*.*")
+INSTALL(FILES ${examp_files}
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/SoDaUtils/examples  
+)
 
 IF(BUILD_RPM OR BUILD_DEB) 
 INCLUDE(cmake/BuildPackage.cmake)
@@ -145,25 +163,58 @@ configure_package_config_file(
   INSTALL_DESTINATION "${CONFIG_EXPORT_DIR}"
   PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CONFIG_EXPORT_DIR
 )
+  write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
+    VERSION "${SoDaUtils_VERSION}"  
+    COMPATIBILITY AnyNewerVersion)
+
 
 unset(EXPORT_TARGETS)
-
-write_basic_package_version_file(
-  "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
-  VERSION "${SoDaUtils_VERSION}"  
-  COMPATIBILITY AnyNewerVersion)
 
 install(TARGETS sodautils
   EXPORT sodautils-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 install(EXPORT sodautils-targets
   DESTINATION "${CONFIG_EXPORT_DIR}")
+
 install(FILES
   "${PROJECT_BINARY_DIR}/SoDaUtilsConfig.cmake"
   "${PROJECT_BINARY_DIR}/SoDaUtilsConfigVersion.cmake"
   DESTINATION "${CONFIG_EXPORT_DIR}")
+
+
+
+if(yaml-cpp_FOUND)
+  set(EXPORT_TARGETS sodaprops)
+  write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/SoDaPropsConfigVersion.cmake"
+    VERSION "${SoDaUtils_VERSION}"  
+    COMPATIBILITY AnyNewerVersion)
+
+  configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/SoDaPropsConfig.cmake.in"
+    "${PROJECT_BINARY_DIR}/SoDaPropsConfig.cmake"
+    INSTALL_DESTINATION "${CONFIG_EXPORT_DIR}"
+    PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR CONFIG_EXPORT_DIR
+  )
+  unset(EXPORT_TARGETS)
+  
+  install(TARGETS sodaprops
+    EXPORT sodaprops-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(EXPORT sodaprops-targets
+    DESTINATION "${CONFIG_EXPORT_DIR}")
+  install(FILES
+    "${PROJECT_BINARY_DIR}/SoDaPropsConfig.cmake"  
+    "${PROJECT_BINARY_DIR}/SoDaPropsConfigVersion.cmake"
+    DESTINATION "${CONFIG_EXPORT_DIR}")
+
+endif()
 
 unset(CONFIG_EXPORT_DIR)
 

@@ -8,7 +8,7 @@
 #  SoDaUtils_LIBRARIES         - libraries to link against
 
 @PACKAGE_INIT@
-find_dependency(yaml-cpp)
+include(CMakeFindDependencyMacro)
 find_dependency(Threads REQUIRED)
 
 set_and_check(SoDaUtils_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")

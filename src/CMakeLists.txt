@@ -10,15 +10,25 @@ set(UTILS_SRCS
 )
       
 if(yaml-cpp_FOUND)
-  list(APPEND UTILS_SRCS
+  message("Making libsodaprops")
+  set(PROPS_SRCS
     PropertyTree.cxx    
     PropertyTreeYAML.cxx)    
+  add_library(sodaprops STATIC ${PROPS_SRCS})
+  target_link_libraries(sodaprops ${YAML_CPP_LIBRARIES})
+  set_target_properties(sodaprops PROPERTIES VERSION ${SoDaUtils_VERSION})
+  set_target_properties(sodaprops PROPERTIES
+    VERSION ${SoDaUtils_VERSION}
+    SOVERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}"
+    PROJECT_LABEL "SoDaUtils"
+    DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+  
 endif()	
 
 add_library(sodautils STATIC ${UTILS_SRCS})
 add_library(sodautils::sodautils ALIAS sodautils)
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
-target_link_libraries(sodautils Threads::Threads ${YAML_CPP_LIBRARIES})
+target_link_libraries(sodautils Threads::Threads)
 
 message("CMAKE_INSTALL_INCLUDEDIR = [${CMAKE_INSTALL_INCLUDEDIR}]")
 

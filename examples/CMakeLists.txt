@@ -8,6 +8,7 @@ ENDIF()
 PROJECT(SoDaUtilsExample)
 
 FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(yaml-cpp)
 
 # optimizations
 IF(NOT CMAKE_BUILD_TYPE)
@@ -45,9 +46,11 @@ add_executable(BarrierExample BarrierExample.cxx)
 target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES} Threads::Threads)
 target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
+if(yaml-cpp_FOUND) 
 add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
 target_link_libraries(PropertyTreeYAML_Test ${SoDaUtils_LIBRARIES} Threads::Threads)
 target_include_directories(PropertyTreeYAML_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+endif()
 
 
 
