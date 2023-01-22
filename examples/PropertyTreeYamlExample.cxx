@@ -1,6 +1,6 @@
-#include "../include/PropertyTreeYAML.hxx"
-#include "../include/Format.hxx"
-#include "../include/Options.hxx"
+#include "SoDa/PropertyTreeYAML.hxx"
+#include "SoDa/Format.hxx"
+#include "SoDa/Options.hxx"
 
 #include <iostream>
 #include <thread>

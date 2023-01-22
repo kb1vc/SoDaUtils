@@ -28,30 +28,30 @@ FIND_PACKAGE(SoDaProps)
 
 add_executable(UtilsExample UtilsExample.cxx)
 target_link_libraries(UtilsExample ${SoDaUtils_LIBRARIES})
-target_include_directories(UtilsExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+target_include_directories(UtilsExample PUBLIC ${SoDaUtils_INCLUDE_DIR})
 
 add_executable(OptionsExample OptionsExample.cxx)
 target_link_libraries(OptionsExample ${SoDaUtils_LIBRARIES})
-target_include_directories(OptionsExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+target_include_directories(OptionsExample PUBLIC ${SoDaUtils_INCLUDE_DIR})
 
 add_executable(FormatExample FormatExample.cxx)
 target_link_libraries(FormatExample ${SoDaUtils_LIBRARIES})
-target_include_directories(FormatExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+target_include_directories(FormatExample PUBLIC ${SoDaUtils_INCLUDE_DIR})
 
 add_executable(Format_Test Format_Test.cxx)
 target_link_libraries(Format_Test ${SoDaUtils_LIBRARIES})
-target_include_directories(Format_Test PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+target_include_directories(Format_Test PUBLIC ${SoDaUtils_INCLUDE_DIR})
 
 
 add_executable(BarrierExample BarrierExample.cxx)
 target_link_libraries(BarrierExample ${SoDaUtils_LIBRARIES} Threads::Threads)
-target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIRS})
+target_include_directories(BarrierExample PUBLIC ${SoDaUtils_INCLUDE_DIR})
 
 if(SoDaProps_FOUND) 
-add_executable(PropertyTreeYAML_Test PropertyTreeYAML_Test.cxx)
-target_link_libraries(PropertyTreeYAML_Test ${SoDaUtils_LIBRARIES} ${SoDaProps_LIBRARIES}  Threads::Threads)
-target_include_directories(PropertyTreeYAML_Test 
-  PUBLIC ${SoDaUtils_INCLUDE_DIRS} ${SoDaProps_INCLUDE_DIRS})
+add_executable(PropertyTreeYamlExample PropertyTreeYamlExample.cxx)
+target_link_libraries(PropertyTreeYamlExample ${SoDaUtils_LIBRARIES} ${SoDaProps_LIBRARIES}  Threads::Threads)
+target_include_directories(PropertyTreeYamlExample 
+  PUBLIC ${SoDaUtils_INCLUDE_DIR} ${SoDaProps_INCLUDE_DIR})
 endif()
 
 

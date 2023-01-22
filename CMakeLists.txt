@@ -12,8 +12,8 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
-FIND_PACKAGE(yaml-cpp)
-message("YAML_CPP_INCLUDE_DIR [${YAML_CPP_INCLUDE_DIR}]")
+
+include(${PROJECT_SOURCE_DIR}/cmake/BuildYamlCpp.cmake)
 
 # Automatic CMake config generation inspired from https://github.com/jbeder/yaml-cpp.git
 INCLUDE(CMakePackageConfigHelpers)
