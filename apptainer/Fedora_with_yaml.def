@@ -3,12 +3,12 @@ From: fedora_37.sif
 %post
  dnf group install --assumeyes "C Development Tools and Libraries"
  dnf install --assumeyes cmake
+ dnf install --assumeyes git
  dnf install --assumeyes rpm-build
- dnf install --assumeyes yaml-cpp-static 
-  
+ dnf install --assumeyes yaml-cpp-static
  
 %help
-  This builds SoDaUtils, runs the tests, and builds an rpm package
+ This builds a fedora 37 image with the bare requisites to build the kit
   
 
   

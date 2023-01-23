@@ -8,21 +8,29 @@ set(UTILS_SRCS
 	UtilsBase.cxx
 	Barrier.cxx
 )
-      
+
+
 if(yaml-cpp_FOUND)
-  message("Making libsodaprops")
+  message("\n\nYAML_CPP_LIBRARIES = [${YAML_CPP_LIBRARIES}]\n\n")
+  message("Making libsodaprops with yaml lib [${YAML_CPP_LIBRARIES}]")
   set(PROPS_SRCS
     PropertyTree.cxx    
     PropertyTreeYAML.cxx)    
-  add_library(sodaprops STATIC ${PROPS_SRCS})
-  target_link_libraries(sodaprops ${YAML_CPP_LIBRARIES})
-  set_target_properties(sodaprops PROPERTIES VERSION ${SoDaUtils_VERSION})
-  set_target_properties(sodaprops PROPERTIES
+  add_library(sodaprops_pre STATIC ${PROPS_SRCS})
+  add_library(sodaprops_pre::sodaprops_pre ALIAS sodaprops_pre)
+  target_link_libraries(sodaprops_pre PRIVATE ${YAML_CPP_LIBRARIES})
+  set_target_properties(sodaprops_pre PROPERTIES VERSION ${SoDaUtils_VERSION})
+  set_target_properties(sodaprops_pre PROPERTIES
     VERSION ${SoDaUtils_VERSION}
     SOVERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}"
     PROJECT_LABEL "SoDaUtils"
     DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
-  
+  include(ArchiveMerge.cmake)
+  LIST(APPEND proplibs libsodaprops_pre.a ${YAML_CPP_LIB_DIR}/${YAML_CPP_LIBRARIES})
+  message("proplibs [${proplibs}]")
+  combine_archives(sodaprops "${proplibs}" "sodaprops_pre")
+  add_library(sodaprops::sodaprops ALIAS sodaprops)
+  set_target_properties(sodaprops PROPERTIES VERSION ${SoDaUtils_VERSION})
 endif()	
 
 add_library(sodautils STATIC ${UTILS_SRCS})
