@@ -16,20 +16,9 @@ if(yaml-cpp_FOUND)
   set(PROPS_SRCS
     PropertyTree.cxx    
     PropertyTreeYAML.cxx)    
-  add_library(sodaprops_pre STATIC ${PROPS_SRCS})
-  add_library(sodaprops_pre::sodaprops_pre ALIAS sodaprops_pre)
-  target_link_libraries(sodaprops_pre PRIVATE ${YAML_CPP_LIBRARIES})
-  set_target_properties(sodaprops_pre PROPERTIES VERSION ${SoDaUtils_VERSION})
-  set_target_properties(sodaprops_pre PROPERTIES
-    VERSION ${SoDaUtils_VERSION}
-    SOVERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}"
-    PROJECT_LABEL "SoDaUtils"
-    DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
-  include(ArchiveMerge.cmake)
-  LIST(APPEND proplibs libsodaprops_pre.a ${YAML_CPP_LIB_DIR}/${YAML_CPP_LIBRARIES})
-  message("proplibs [${proplibs}]")
-  combine_archives(sodaprops "${proplibs}" "sodaprops_pre")
+  add_library(sodaprops STATIC ${PROPS_SRCS})
   add_library(sodaprops::sodaprops ALIAS sodaprops)
+  target_link_libraries(sodaprops PRIVATE ${YAML_CPP_LIBRARIES})
   set_target_properties(sodaprops PROPERTIES VERSION ${SoDaUtils_VERSION})
 endif()	
 

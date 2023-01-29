@@ -12,8 +12,17 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
-
-include(${PROJECT_SOURCE_DIR}/cmake/BuildYamlCpp.cmake)
+FIND_PACKAGE(yaml-cpp QUIET)
+ 
+IF(yaml-cpp_FOUND)
+  # we need to create the lib dir for yaml-cpp
+  message("YAML_CPP_LIBRARIES [${YAML_CPP_LIBRARIES}]")
+  # alas YAML_CPP_LIB_DIR isn't defined in the config file (!)
+  # we need to create it from YAML_CPP_CMAKE_DIR (!)
+  set(YAML_CPP_LIB_DIR "${YAML_CPP_CMAKE_DIR}/../../")
+ELSE()
+  message("YAML-CPP library was not found. We will not build SoDaProperties library.")
+ENDIF()
 
 # Automatic CMake config generation inspired from https://github.com/jbeder/yaml-cpp.git
 INCLUDE(CMakePackageConfigHelpers)

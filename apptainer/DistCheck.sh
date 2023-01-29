@@ -4,62 +4,95 @@
 # Here's what we test:
 # 
 # 1. Local build with no yaml installed
+#    Build Fedora_no_yaml.sif from Fedora_no_yaml.def
+#    run build_kit.sh LOCAL
+#    run test_kit LOCAL
 # 2. Local build with yaml
-# 3. Install build with no yaml installed
+#    Build Fedora_noyaml.sif
+#    run build_kit.sh LOCAL
+#    run test_kit.sh LOCAL
+# 3. Install build with no yaml installed  
+#    Fedora_noyaml_install.sif with post /mnt/build_kit.sh INSTALL
+#    run test_kit.sh INSTALL
 # 4. Install build with yaml
+#    Fedora_yaml_install.sif with post /mnt/build_kit.sh INSTALL
+#    run test_kit.sh INSTALL
 # 5. Build with install from RPM
-# 
-# First
+#    Fedora_rpm_install.sif  
+#    run test_kit.sh INSTALL
+#
 # apptainer pull docker://fedora:37
 
-# Then build the containers where we'll do the kit build
-# First items 1, 3
+# first build the "common container"
+sudo rm -rf Fedora_CommonTools.sif
+sudo apptainer build Fedora_CommonTools.sif Fedora_CommonTools.def
+
+#  Recipes all build on Fedora_generic.def
+
+# test 1
+# 1. Local build with no yaml installed
+#    Build Fedora_no_yaml.sif from Fedora_no_yaml.def
+#    run build_kit.sh LOCAL
+#    run test_kit LOCAL
 echo "\n\nBUILD 1"
-sudo apptainer build  Fedora_noyaml.sif Fedora_noyaml.def
-# items 2 and 4
-echo "\n\nBUILD 2"
-sudo apptainer build  Fedora_yaml.sif `pwd`/Fedora_with_yaml.def
-
-# test 1 local build with no yaml
-echo "\n\nTEST 1"
 mkdir test_1
-rm -rf test_1/*
-apptainer exec --bind `pwd`/test_1:/mnt --bind `pwd`/../:/source_tree  Fedora_noyaml.sif ./build_test_local.sh
+cp Fedora_generic.def test_1/Fedora_noyaml.def
+# First items 1, 3
+sudo apptainer build --bind `pwd`/test_1:/mnt test_1/Fedora_noyaml.sif test_1/Fedora_noyaml.def
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_1:/mnt --bind `pwd`/../:/source_tree  test_1/Fedora_noyaml.sif `pwd`/build_kit.sh LOCAL
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_1:/mnt --bind `pwd`/../:/source_tree  test_1/Fedora_noyaml.sif `pwd`/test_kit.sh LOCAL
 
-# now do test 2 local build with yaml  uses
-echo "\n\nTEST 2"
+
+# 2. Local build with yaml
+#    Build Fedora_yaml.sif
+#    run build_kit.sh LOCAL
+#    run test_kit.sh LOCAL
+echo "\n\nBUILD 2"
 mkdir test_2
-rm -rf test_2/*
-apptainer exec --bind `pwd`/test_2:/mnt --bind `pwd`/../:/source_tree  Fedora_yaml.sif ./build_test_local.sh
+cat Fedora_generic.def | sed -e 's/#STEP1/dnf install --assumeyes yaml-cpp-devel/' > test_2/Fedora_yaml.def
+sudo apptainer build --bind `pwd`/test_2:/mnt test_2/Fedora_yaml.sif test_2/Fedora_yaml.def
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_2:/mnt --bind `pwd`/../:/source_tree  test_2/Fedora_yaml.sif `pwd`/build_kit.sh LOCAL
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_2:/mnt --bind `pwd`/../:/source_tree  test_2/Fedora_yaml.sif `pwd`/test_kit.sh LOCAL TESTYAML
 
-# test 3 installed build with no yaml
-echo "\n\nTEST 3"
+# 3. Install build with no yaml installed  
+#    Fedora_noyaml_install.sif with post /mnt/build_kit.sh INSTALL
+#    run test_kit.sh INSTALL
+echo "BUILD3"
 mkdir test_3
-rm -rf test_3/*
-apptainer exec --bind `pwd`/test_3:/mnt --bind `pwd`/../:/source_tree  Fedora_noyaml.sif ./build_test_install.sh
+cat Fedora_generic.def | sed -e 's|#STEP1|/mnt/script/build_kit.sh INSTALL|' > test_3/Fedora_noyaml.def
+# First items 1, 3
+sudo apptainer build --bind `pwd`/test_3:/mnt --bind `pwd`/../:/mnt/source_tree --bind `pwd`:/mnt/script test_3/Fedora_noyaml.sif test_3/Fedora_noyaml.def
+echo "\n\n\n"
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_3:/mnt test_3/Fedora_noyaml.sif `pwd`/test_kit.sh INSTALL
 
 # test 4 installed build with yaml
-echo "\n\nTEST 4"
+# 4. Install build with yaml
+#    Fedora_yaml_install.sif with post /mnt/build_kit.sh INSTALL
+#    run build_rpm.sh
+#    run test_kit.sh INSTALL
+echo "BUILD4"
 mkdir test_4
-rm -rf test_4/*
-apptainer exec --bind `pwd`/test_4:/mnt --bind `pwd`/../:/source_tree  Fedora_yaml.sif ./build_test_install.sh
+cat Fedora_generic.def | sed -e 's/#STEP1/dnf install --assumeyes yaml-cpp-devel/' | sed -e 's|#STEP2|/mnt/script/build_kit.sh INSTALL BUILD_KIT|' > test_4/Fedora_noyaml.def
+# First items 1, 3
+sudo apptainer build --bind `pwd`/test_4:/mnt --bind `pwd`/../:/mnt/source_tree --bind `pwd`:/mnt/script test_4/Fedora_noyaml.sif test_4/Fedora_noyaml.def
+echo "\n\n\n"
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_4:/mnt test_4/Fedora_noyaml.sif `pwd`/test_kit.sh INSTALL
 
 
-# now do test 5 -- installed build from RPM
-echo "\n\nTEST 5"
+# 5. Build with install from RPM
+#    Fedora_rpm_install.sif  
+#    run test_kit.sh INSTALL
 mkdir test_5
-rm -rf test_5/*
-mkdir test_5_build
-rm -rf test_5_build/*
-mkdir kit_location
-rm -rf kit_location/*
-# make the RPM
-echo "\n\nTEST 5 RPM CREATE"
-apptainer exec --bind `pwd`/test5_build:/mnt --bind `pwd`/../:/source_tree --bind `pwd`/kit_location:/kitloc Fedora_noyaml.sif ./build_rpm.sh
-# Now build a new image with the RPM installed
-echo "\n\nTEST 5 RPM INSTALL/BUILD"
-sudo apptainer build --bind `pwd`/kit_location:/mnt  Fedora_rpm_test.sif Fedora_rpm_test.def
-
-# Finally, run test 5
-echo "\n\nTEST 5 example build"
-apptainer exec --bind `pwd`/test_5:/mnt --bind `pwd`/../:/source_tree  Fedora_rpm_test.sif ./build_test_install.sh
+cp test_4/tool_tree/build/SoDaUtils*.rpm test_5/SoDaUtils_kit.rpm
+cp test_4/tool_tree/build/SoDaUtils*.rpm ./
+cat Fedora_generic.def | sed -e 's/#STEP1/dnf install --assumeyes yaml-cpp-devel/' | sed -e 's|#STEP2|dnf install --assumeyes /mnt/SoDaUtils_kit.rpm|' > test_5/Fedora_rpm.def
+sudo apptainer build --bind `pwd`/test_5:/mnt test_5/Fedora_rpm.sif test_5/Fedora_rpm.def
+echo "\n\n\n"
+echo "\n\n\n"
+apptainer exec --bind `pwd`/test_5:/mnt --bind `pwd`/../:/source_tree  test_5/Fedora_rpm.sif `pwd`/test_kit.sh INSTALL TESTYAML
