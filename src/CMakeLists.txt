@@ -11,8 +11,6 @@ set(UTILS_SRCS
 
 
 if(yaml-cpp_FOUND)
-  message("\n\nYAML_CPP_LIBRARIES = [${YAML_CPP_LIBRARIES}]\n\n")
-  message("Making libsodaprops with yaml lib [${YAML_CPP_LIBRARIES}]")
   set(PROPS_SRCS
     PropertyTree.cxx    
     PropertyTreeYAML.cxx)    
@@ -26,8 +24,6 @@ add_library(sodautils STATIC ${UTILS_SRCS})
 add_library(sodautils::sodautils ALIAS sodautils)
 set_target_properties(sodautils PROPERTIES VERSION ${SoDaUtils_VERSION})
 target_link_libraries(sodautils Threads::Threads)
-
-message("CMAKE_INSTALL_INCLUDEDIR = [${CMAKE_INSTALL_INCLUDEDIR}]")
 
 target_include_directories(sodautils
   PUBLIC

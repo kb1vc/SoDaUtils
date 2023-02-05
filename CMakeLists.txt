@@ -16,7 +16,6 @@ FIND_PACKAGE(yaml-cpp QUIET)
  
 IF(yaml-cpp_FOUND)
   # we need to create the lib dir for yaml-cpp
-  message("YAML_CPP_LIBRARIES [${YAML_CPP_LIBRARIES}]")
   # alas YAML_CPP_LIB_DIR isn't defined in the config file (!)
   # we need to create it from YAML_CPP_CMAKE_DIR (!)
   set(YAML_CPP_LIB_DIR "${YAML_CPP_CMAKE_DIR}/../../")
@@ -32,8 +31,8 @@ INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
 SET(SoDaUtils_VERSION_MAJOR 2)
-SET(SoDaUtils_VERSION_MINOR 6)
-SET(SoDaUtils_VERSION_PATCH 1)
+SET(SoDaUtils_VERSION_MINOR 7)
+SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 
 set(SoDaUtils_PACKAGE_DESCRIPTION 
@@ -115,9 +114,7 @@ FILE(GLOB all_includes ${CMAKE_CURRENT_LIST_DIR}/include/*.hxx)
 
 if(NOT yaml-cpp_FOUND) 
   FILE(GLOB ptree_includes ${CMAKE_CURRENT_LIST_DIR}/include/Property*.hxx)
-  message("ptree_includes = ${ptree_includes}")
   foreach(pti IN LISTS ptree_includes)
-    message("removing [${pti}]")
     list(REMOVE_ITEM all_includes ${pti})  
   endforeach()
 endif()
