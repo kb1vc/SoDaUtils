@@ -73,8 +73,9 @@ namespace SoDa {
       return this; 
     }
     else if(dictionary.find(pathlist.front()) != dictionary.end()) {
-	pathlist.pop_front();
-	return getPropRecursive(pathlist, orig_pathname, throw_exception);
+      auto next_node = dictionary[pathlist.front()];
+      pathlist.pop_front();
+      return next_node->getPropRecursive(pathlist, orig_pathname, throw_exception);
     }
     else {
       if(throw_exception) {
@@ -105,15 +106,16 @@ namespace SoDa {
   std::ostream & PropertyTree::PropNode::dump(std::ostream & os, std::string indent) {
     
     if(is_terminal) {
-      os << indent << val_string << "\n";
+      os << indent << "{" << val_string << "}\n";
       return os;
     }
 
     if(!prop_list.empty()) {
-      os << "<<<PROPLIST>>>\n";      
+      os << "[" << val_string << "]\n";
+      os << "\t<<<PROPLIST>>>\n";      
       for(auto v : prop_list) {
 	if(v->is_terminal) {
-	  os << indent << v->val_string << "\n";
+	  os << indent << "(" << v->val_string << ")\n";
 	}
 	else {
 	  v->dump(os, indent + "  ");
@@ -124,9 +126,9 @@ namespace SoDa {
     if(!dictionary.empty()) {
       os << "<<<DICTIONARY>>>\n";
       for(auto v : dictionary) {
-	os << indent << v.first << ":  "; 
+	os << indent << "@" << v.first << ":  "; 
 	if(v.second->is_terminal) {
-	  os << v.second->val_string << "\n";
+	  os << "|" <<  v.second->val_string << "|\n";
 	}
 	else {
 	  os << "\n";
@@ -136,6 +138,17 @@ namespace SoDa {
     }
     
     return os; 
+  }
+
+  PropertyTree::PropNode * PropertyTree::get(const std::string & pathname, 
+					     bool throw_exception) {
+    PropNode * pn = root->getProp(pathname, throw_exception); 
+    
+    if(pn == nullptr) {
+      throw PropNode::PropertyNotFound(pathname); 
+    }
+      
+    return pn;
   }
   
   PropertyTree::FileNotFound::FileNotFound(const std::string & str) :

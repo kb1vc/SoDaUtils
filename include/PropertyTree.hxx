@@ -72,17 +72,17 @@ namespace SoDa {
      * @class PropertyTree 
      * @brief Hold 
      */
-  
+
+ 
   class PropertyTree {
   public:
+    class PropNode;    
     /**
      * @brief The constructor.
      *
      * Create a property tree.  There won't be anything in it. 
      */
     PropertyTree();
-
-
 
     /**
      * @brief Read a property file
@@ -116,28 +116,18 @@ namespace SoDa {
     
     
     /**
-     * @brief get an attribute from the tree
-     * @param v the value to be read from the attribute
+     * @brief get a property from the tree
      * @param pathname the heirarchical path name to the attribute.
      * Levels in the tree are separated with ":" as in "top:next:leaf"
      * @param throw_exception throws an exception if the pathname is not
      * found or if the type of the value cannot be read from the property
      * string at that node.
-     * @returns true if the value was found and was readable from the property string. 
+     * @returns a pointer to a PropNode that can be used to get a list of properties, keys, or the value of this property. 
      * @throws SoDa::PropertyTree::PropertyNotFound 
      * @throws SoDa::PropertyTree::BadPropertyType
      */
-    template<typename T> bool get(T & v, 
-				  const std::string & pathname, 
-				  bool throw_exception = false) {
-      PropNode * pn = root->getProp(pathname, throw_exception); 
-      
-      if(pn == nullptr) {
-	throw PropNode::PropertyNotFound(pathname); 
-      }
-      
-      return pn->get<T>(v, throw_exception);
-    }
+    PropNode * get(const std::string & pathname, 
+		   bool throw_exception = false);
     
   public:
     class PropNode {
@@ -167,6 +157,11 @@ namespace SoDa {
        */
       template<typename T> bool get(T & v, bool throw_exception = false) {
 	std::stringstream ss(val_string, std::ios_base::in);
+
+	std::cerr << "PropNode::get on propnode:\n";
+	dump(std::cerr, "");
+		     
+		     
 	ss >> v; 
 	if(ss.fail()) {
 	  if(throw_exception) {

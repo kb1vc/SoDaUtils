@@ -20,6 +20,15 @@ int main(int argc, char * argv[]) {
   
   SoDa::PropertyTreeYAML ptr(fname); 
 
-  std::cerr << "\n\n\nREADY?\n\n\n";
+  std::cout << "\n\n\nREADY?\n\n\n";
   ptr.dump(std::cout); 
+  
+  std::string propname("FLINTSTONE:FRED");
+  // get the property FLINTSTONE:FRED and see that the value is "guy"
+  auto pn = ptr.get(propname);
+  pn->dump(std::cerr, "!\t");
+  
+  std::string fattr;
+  bool got_it = pn->get<std::string>(fattr);
+  std::cout << propname << " = [" << fattr << "]\n";
 }

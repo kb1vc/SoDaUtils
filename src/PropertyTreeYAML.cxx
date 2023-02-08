@@ -52,49 +52,94 @@ namespace SoDa {
     }
     
     // now recursively create the tree
-    fillRecurse(TopNode, root);
+    traverse(TopNode, "");
+    root = buildRecurse(TopNode, nullptr);
   }
-  
-  void PropertyTreeYAML::fillRecurse(const YAML::Node & node,
-				     PropertyTree::PropNode * prop) {
-    if(node.IsScalar()) {
-      auto pnp = new PropertyTree::PropNode(prop, 
-					    node.as<std::string>(), 
-					      true);
-	
-      prop->prop_list.push_back(pnp); 
-      return; 
-    }
-    for(YAML::const_iterator it = node.begin(); 
-	it != node.end(); 
-	++it) {
-    
-      if(it->second.IsMap()) {
-	// New node. It will have children
-	// that are either maps or lists or terminals.
-	auto pnp = new PropertyTree::PropNode(prop, "", false);
-	prop->dictionary[it->first.as<std::string>()] = pnp;
-	fillRecurse(YAML::Node (it->second), pnp);
-      }
 
-      if(it->second.IsScalar()) {
-	auto pnp = new PropertyTree::PropNode(prop, 
-					      it->second.as<std::string>(), 
-					      true);
-	
-	prop->dictionary[it->first.as<std::string>()] = pnp; 
+  std::string ntypestr(const YAML::Node & node) {
+    std::string ret; 
+    if(node.IsDefined()) ret = ret + "Defined ";
+    if(node.IsNull()) ret = ret + "Null ";
+    if(node.IsScalar()) ret = ret + "Scalar ";
+    if(node.IsSequence()) ret = ret + "Sequence ";
+    if(node.IsMap()) ret = ret + "Map ";
+
+    return ret;
+  }
+
+  void PropertyTreeYAML::traverse(const YAML::Node & node, std::string indent) {
+    //    std::cerr << indent << "kind [" << ntypestr(node) << "] size = " << node.size() << "\n";
+
+    if(node.IsScalar()) {
+      std::cerr << indent << "Scalar value [" << node.as<std::string>() << "]\n";
+    }
+    else if(node.IsSequence()) {
+      std::cerr << indent << "Starting sequence\n";
+
+      for(auto it : node) {
+	traverse(it, indent + "  ");
       }
-      
-      if(it->second.IsSequence()) {
-	// we aren't really going to do anything.  Just
-	// pass it along, as all prop tree nodes are lists or dictionaries
-	// or both
-	
-	for(auto n : it->second) {
-	  fillRecurse(n, prop);
+    }
+    else if(node.IsMap()) {
+      //for(auto it = node.begin(); it != node.end(); ++it) {
+      for(auto it : node) {
+	if(it.second.size() == 0) {
+	  std::cerr << indent << "[" << it.first << "] = (" << it.second.as<std::string>() << ")\n";	  
+	}
+	else {
+	  std::cerr << indent << "Map[" << it.first << "]  !size = " << it.second.size() << "\n";	  
+	  traverse(it.second, indent + "  ");
 	}
       }
     }
+  }
+  unsigned int level = 0;
+  
+  PropertyTree::PropNode * 
+  PropertyTreeYAML::buildRecurse(const YAML::Node & node,
+				 PropertyTree::PropNode * badparent) {
+
+    PropertyTree::PropNode * ret;
+    level++;
+    
+    if(node.IsScalar()) {
+      ret = new PropertyTree::PropNode(nullptr, node.as<std::string>(), true);
+    }
+    else if(node.IsSequence()) {
+      // build the tree for each item in the sequence
+      std::cerr << level << " Got sequence named [" 
+		<< node.as<std::string>("SEQ???") << "]\n";
+    
+      // create a new sequence tree...
+      ret = new PropertyTree::PropNode(nullptr, node.as<std::string>("SEQ???"),
+				       false);
+      for(auto it : node) {
+	ret->prop_list.push_back(buildRecurse(it, nullptr));
+      }
+    }
+    else if(node.IsMap()) {
+      // this is either a dictionary
+      // or it is a KVP.
+      // A KVP will be one element long.
+      ret = new PropertyTree::PropNode(nullptr, 
+				       node.as<std::string>("ANON"),
+				       false);
+      
+      // We can only know by testing its children
+      for(auto it : node) {
+	if(it.second.IsScalar()) {
+	  // this was a KVP	  
+	  ret->dictionary[it.first.as<std::string>()] = 
+	    buildRecurse(it.second, nullptr);
+	}
+	else {
+	  ret->dictionary[it.first.as<std::string>()] = 
+	    buildRecurse(it.second, nullptr);
+	}
+      }
+    }
+    level --; 
+    return ret;
   }
 
   void PropertyTreeYAML::writeFile(const std::string & filename) {
