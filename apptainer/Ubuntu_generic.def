@@ -1,0 +1,20 @@
+Bootstrap: localimage
+From: Ubuntu_CommonTools.sif
+%environment
+ #START_SCRIPT=${START_SCRIPT:-''}
+
+%post
+ echo "Building new image"
+ apt-get update
+ apt-get -y install libyaml-cpp-dev 
+ #STEP1
+ #STEP2
+ #STEP3
+
+
+
+%help
+ This builds an Ubuntu image with the bare requisites to build the kit
+  
+
+  

@@ -1,0 +1,13 @@
+Bootstrap: localimage
+From: ubuntu_22.04.sif
+%post
+ apt-get update
+ apt-get -y install build-essential
+ apt-get -y install dpkg-repack
+ apt-get -y install cmake
+
+%help
+ This builds an Ubuntu 22.04 image with the bare requisites to build the kit
+  
+
+  
