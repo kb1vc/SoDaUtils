@@ -1,8 +1,9 @@
-#include "PropertyTree.hxx"
+
 #include <iostream>
 #include <sstream>
 #include "Utils.hxx"
-
+#include "Format.hxx"
+#include "PropertyTree.hxx"
 /*
 BSD 2-Clause License
 
@@ -34,121 +35,77 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
   PropertyTree::PropertyTree() {
-    root = new PropNode(nullptr, "root", false);
   }
 
-  std::string PropertyTree::PropNode::getPathName() {
-    std::string ret;
-    if(parent != nullptr) {
-      ret = parent->getPathName() + ":" + val_string;
+  std::list<std::string> 
+  PropertyTree::getChildNames(const std::string & pathname, 
+			      bool throw_exception) {
+    std::list<std::string> ret; 
+    auto pathlist = SoDa::split(pathname, ":");
+    auto pn = internalGet(&root, pathlist, false, pathname, throw_exception);
+    if(pn != nullptr) {
+      for(auto ce : pn->children) {
+	ret.push_back(ce.first);
+      }
     }
-    
     return ret; 
   }
-  
-				  
-  PropertyTree::PropNode::PropNode(PropNode * parent, 
-				   const std::string & val_string,
-				   bool is_terminal) : 
-    parent(parent), val_string(val_string), is_terminal(is_terminal)
-  {
-    // nothing much to do. 
-  }
-  
-  
-  
-  PropertyTree::PropNode * 
-  PropertyTree::PropNode::getProp(const std::string & pathname, 
-				  bool throw_exception) {
-    // first split the first chunk of the pathname -- up to the :
-    std::list<std::string> pathlist = SoDa::split(pathname, ":"); 
-    return getPropRecursive(pathlist, pathname, throw_exception); 
-  }
 
-  PropertyTree::PropNode * 
-  PropertyTree::PropNode::getPropRecursive(std::list<std::string> & pathlist, 
-					   const std::string & orig_pathname, 
-					   bool throw_exception) {
-    if(pathlist.size() == 0) {
-      return this; 
+  std::ostream & 
+  PropertyTree::recursiveDump(PropNode * pn, std::ostream & os,
+			      const std::string & pathname) {
+    std::string pathnamebase = pathname + ":";
+    if(pathname.size() == 0) {
+      pathnamebase = "";
     }
-    else if(dictionary.find(pathlist.front()) != dictionary.end()) {
-      auto next_node = dictionary[pathlist.front()];
-      pathlist.pop_front();
-      return next_node->getPropRecursive(pathlist, orig_pathname, throw_exception);
-    }
-    else {
-      if(throw_exception) {
-	throw PropertyNotFound(orig_pathname); 
-      }
-    }
-
-    return nullptr; 
-  }
-  
-  std::list<PropertyTree::PropNode *> PropertyTree::PropNode::getList() {
-    return prop_list; 
-  }
-  
-  std::list<std::string> PropertyTree::PropNode::getKeys() {
-    std::list<std::string> keys; 
-    for(auto a : dictionary) {
-      keys.push_back(a.first); 
-    }
-    return keys; 
-  }
-
-
-  std::ostream & PropertyTree::dump(std::ostream & os) {
-    return root->dump(os, "");
-  }
-
-  std::ostream & PropertyTree::PropNode::dump(std::ostream & os, std::string indent) {
-    
-    if(is_terminal) {
-      os << indent << "{" << val_string << "}\n";
-      return os;
-    }
-
-    if(!prop_list.empty()) {
-      os << "[" << val_string << "]\n";
-      os << "\t<<<PROPLIST>>>\n";      
-      for(auto v : prop_list) {
-	if(v->is_terminal) {
-	  os << indent << "(" << v->val_string << ")\n";
-	}
-	else {
-	  v->dump(os, indent + "  ");
-	}
-      }
-    }
-
-    if(!dictionary.empty()) {
-      os << "<<<DICTIONARY>>>\n";
-      for(auto v : dictionary) {
-	os << indent << "@" << v.first << ":  "; 
-	if(v.second->is_terminal) {
-	  os << "|" <<  v.second->val_string << "|\n";
-	}
-	else {
-	  os << "\n";
-	  v.second->dump(os, indent + "  ");
-	}
-      }
+    if(pn->value.size() != 0) {
+      os << pathname << "  [" << pn->value << "]\n";
     }
     
+    for(auto cn : pn->children) {
+      recursiveDump(cn.second, os, pathnamebase + cn.first);
+    }
     return os; 
   }
 
-  PropertyTree::PropNode * PropertyTree::get(const std::string & pathname, 
-					     bool throw_exception) {
-    PropNode * pn = root->getProp(pathname, throw_exception); 
+  std::ostream & PropertyTree::dump(std::ostream & os) {
+    return recursiveDump(&root, os, ""); 
+  }
+  
+  PropertyTree::PropNode * 
+  PropertyTree::internalGet(PropertyTree::PropNode * node, 
+			    std::list<std::string> & pathlist, 
+			    bool create, 
+			    const std::string & orig_pathname, 
+			    bool throw_exception) {
+    // look in the current node. Is the front of the pathlist in
+    // the children map? 
+    if(pathlist.size() == 0) return node;
     
-    if(pn == nullptr) {
-      throw PropNode::PropertyNotFound(pathname); 
+    if(node == nullptr) return nullptr; 
+    
+    std::string key = pathlist.front();
+    pathlist.pop_front();
+    if(node->children.find(key) != node->children.end()) {
+      return internalGet(node->children[key], pathlist, create, 
+			 orig_pathname, throw_exception);
     }
-      
-    return pn;
+    else if(throw_exception) {
+      throw PropertyNotFound(orig_pathname);
+    }
+    else if(create) {
+      node->children[key] = new PropNode("");
+      return internalGet(node->children[key], pathlist, create, 
+			 orig_pathname, throw_exception);
+    }
+    else {
+      return nullptr; 
+    }
+  }
+
+  std::list<std::string> 
+  PropertyTree::makePathList(const std::string & pathname) {
+    return SoDa::split(pathname, ":");
   }
   
   PropertyTree::FileNotFound::FileNotFound(const std::string & str) :
@@ -156,14 +113,15 @@ namespace SoDa {
 	      .addS(str).str())
   {
   }
-  PropertyTree::PropNode::PropertyNotFound::PropertyNotFound(const std::string & str) :
+
+  PropertyTree::PropertyNotFound::PropertyNotFound(const std::string & str) :
     Exception(SoDa::Format("PropertyTree::PropNode::PropertyNotFound \"%0\"")
 	      .addS(str)
 	      .str())
   {
   }
 
-  PropertyTree::PropNode::BadPropertyType::BadPropertyType(const std::string & path_name, 
+  PropertyTree::BadPropertyType::BadPropertyType(const std::string & path_name, 
 							   const std::string & type_name, 
 							   const std::string & val_string) :
     Exception(SoDa::Format("PropertyTree::PropNode::BadPropertyType at node name \"%0\" with value string \"%1\" which cannot be converted to type \"2\"")
@@ -172,5 +130,4 @@ namespace SoDa {
 	      .addS(type_name)
 	      .str()) {
   }
-  
 }

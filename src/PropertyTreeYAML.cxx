@@ -52,8 +52,7 @@ namespace SoDa {
     }
     
     // now recursively create the tree
-    traverse(TopNode, "");
-    root = buildRecurse(TopNode, nullptr);
+    buildRecurse(TopNode, "");
   }
 
   std::string ntypestr(const YAML::Node & node) {
@@ -95,51 +94,27 @@ namespace SoDa {
   }
   unsigned int level = 0;
   
-  PropertyTree::PropNode * 
-  PropertyTreeYAML::buildRecurse(const YAML::Node & node,
-				 PropertyTree::PropNode * badparent) {
 
-    PropertyTree::PropNode * ret;
-    level++;
-    
-    if(node.IsScalar()) {
-      ret = new PropertyTree::PropNode(nullptr, node.as<std::string>(), true);
+  void PropertyTreeYAML::buildRecurse(const YAML::Node & node,
+				      const std::string & pathname) {
+
+    std::cerr << "buildRecurse at pathname [" << pathname << "]\n";
+    std::string pathnamebase = pathname + ":";
+    if(pathname.size() == 0) {
+      pathnamebase = "";
     }
-    else if(node.IsSequence()) {
-      // build the tree for each item in the sequence
-      std::cerr << level << " Got sequence named [" 
-		<< node.as<std::string>("SEQ???") << "]\n";
-    
-      // create a new sequence tree...
-      ret = new PropertyTree::PropNode(nullptr, node.as<std::string>("SEQ???"),
-				       false);
-      for(auto it : node) {
-	ret->prop_list.push_back(buildRecurse(it, nullptr));
-      }
+    if(node.IsScalar()) {
+      // we're at the end 
+      put(pathname, node.as<std::string>(), false);
     }
     else if(node.IsMap()) {
-      // this is either a dictionary
-      // or it is a KVP.
-      // A KVP will be one element long.
-      ret = new PropertyTree::PropNode(nullptr, 
-				       node.as<std::string>("ANON"),
-				       false);
-      
-      // We can only know by testing its children
+
+      // if the map list is 1 long, then we call create path with a KVP.
+      std::cerr << "At pathname \"" << pathname << "\" with node.size() = " << node.size() << "\n";
       for(auto it : node) {
-	if(it.second.IsScalar()) {
-	  // this was a KVP	  
-	  ret->dictionary[it.first.as<std::string>()] = 
-	    buildRecurse(it.second, nullptr);
-	}
-	else {
-	  ret->dictionary[it.first.as<std::string>()] = 
-	    buildRecurse(it.second, nullptr);
-	}
+	buildRecurse(it.second, pathnamebase + it.first.as<std::string>());
       }
     }
-    level --; 
-    return ret;
   }
 
   void PropertyTreeYAML::writeFile(const std::string & filename) {

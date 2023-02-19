@@ -123,11 +123,8 @@ namespace SoDa {
      */
     void writeFile(const std::string & filename); 
   protected: 
-    enum ParentType { MAP, SEQUENCE };
-
-    PropertyTree::PropNode * buildRecurse(const YAML::Node & node,
-					  PropertyTree::PropNode *bad_parent);
-
+    void buildRecurse(const YAML::Node & node,
+		      const std::string & pathname);
 
     void traverse(const YAML::Node & node, std::string indent);
   };

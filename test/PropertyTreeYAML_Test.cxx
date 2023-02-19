@@ -25,10 +25,7 @@ int main(int argc, char * argv[]) {
   
   std::string propname("FLINTSTONE:FRED");
   // get the property FLINTSTONE:FRED and see that the value is "guy"
-  auto pn = ptr.get(propname);
-  pn->dump(std::cerr, "!\t");
-  
-  std::string fattr;
-  bool got_it = pn->get<std::string>(fattr);
-  std::cout << propname << " = [" << fattr << "]\n";
+  std::string propval; 
+  bool got_it = ptr.get(propname, propval);
+  std::cout << propname << " = [" << propval << "]\n";
 }

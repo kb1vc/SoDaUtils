@@ -12,7 +12,7 @@ ENDIF()
 PROJECT(SoDaUtils)
 
 FIND_PACKAGE(Threads REQUIRED)
-FIND_PACKAGE(yaml-cpp QUIET)
+FIND_PACKAGE(yaml-cpp REQUIRED)
  
 IF(yaml-cpp_FOUND)
   # we need to create the lib dir for yaml-cpp
@@ -72,6 +72,9 @@ ENDIF()
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 # No -ffast-math because we want Format to know a NaN when it sees one. 
 SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
+
+# we're building the library, so use the local headers
+ADD_DEFINITIONS(-DLIB_BUILD_IMPL=1)
 
 MESSAGE("SoDaUtils_VERSION=[${SoDaUtils_VERSION}]")
 
@@ -143,6 +146,7 @@ IF(NOT DISABLE_DOXYGEN)
     INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/SoDaUtils/doc)
   ENDIF()
 ENDIF()
+
 
 FILE(GLOB examp_files "${CMAKE_CURRENT_LIST_DIR}/examples/*.*")
 INSTALL(FILES ${examp_files}

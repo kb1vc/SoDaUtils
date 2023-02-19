@@ -33,7 +33,7 @@ IF( EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake" )
     "${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
 
   # omit if not required
-  set( CPACK_RPM_PACKAGE_REQUIRES "yaml-cpp >= 0.6.0, gcc-g++ >= 5.0.0")
+  set( CPACK_RPM_PACKAGE_REQUIRES "yaml-cpp-devel >= 0.6.0, gcc-g++ >= 5.0.0")
   set( CPACK_RPM_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR} )
   
   set( CPACK_DEBIAN_PACKAGE_PRIORITY "optional" )
