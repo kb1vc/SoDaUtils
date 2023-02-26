@@ -45,11 +45,9 @@ cmake  -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} -DPACKAGE_SYSTEM_NAME=${DEB_KIT_VE
 make
 make install
 
-echo "Arg 2 is [$2]" '[$2]'
+
 if [ "$2" == "BUILD_DEB_KIT" ]
 then
-    echo "*##############"
-    echo "Making package"
     make package
 fi
 

@@ -28,4 +28,6 @@ int main(int argc, char * argv[]) {
   std::string propval; 
   bool got_it = ptr.get(propname, propval);
   std::cout << propname << " = [" << propval << "]\n";
+  
+  ptr.writeFile("does_this_look_right-p.yaml");
 }
