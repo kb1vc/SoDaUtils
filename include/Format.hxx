@@ -10,7 +10,7 @@
 /*
 BSD 2-Clause License
 
-Copyright (c) 2020, 2021, 2022 Matt Reilly - kb1vc
+Copyright (c) 2020, 2021, 2022, 2023 Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -283,6 +283,7 @@ namespace SoDa {
      * @param v the signed integer value
      * @param width the minimum width of the field. 
      * @param sep an optional separator for things like 1,234,567
+     * @param fill a fill character, for leading zeros for instance
      * @return a reference to this SoDa::Format object to allow 
      * chaining of method invocations. 
      * 
@@ -292,9 +293,11 @@ namespace SoDa {
      * the field will be as wide as necessary to accommodate the value. 
      * 
      * If specified, a separator character will be added every 3 positions
-     * starting from the bottom. 
+     * starting from the bottom.
+     *
+     * The field will be filled out with "fill" if fill is not '\000'
      */
-    Format & addI(int v, unsigned int width = 0, char sep = '\000');
+    Format & addI(int v, unsigned int width = 0, char sep = '\000', char fill = '\000');
 
     /**
      * @brief insert an unsigned integer into the format string

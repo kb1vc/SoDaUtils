@@ -97,7 +97,20 @@ int main(int argc, char * argv[]) {
   std::cerr << SoDa::Format("Testing adjacent markers [%0%1] should be [foobar]\n")
     .addS("foo")
     .addS("bar");
-  
+
+  auto check_str = SoDa::Format("%0 %1 %2 %3")
+    .addI(33, 5, '\000', '0')
+    .addI(44444, 7, ',', '0')
+    .addI(55555, 7, ',')
+    .addI(66666, 7)
+    .str()
+    ;
+  auto cs_should_be = "00033 044,444  55,555   66666";
+  if(cs_should_be != check_str) {
+    std::cerr << "FAIL -- fill character printing is broken.\n";
+    std::cerr << "got [" << check_str << "] wanted [" << cs_should_be << "]\n";
+    exit(-1);
+  }
   if(argc < 5) {
     int rval; 
     try {

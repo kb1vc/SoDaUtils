@@ -10,7 +10,7 @@
 /*
 BSD 2-Clause License
 
-Copyright (c) 2022, Matt Reilly - kb1vc
+Copyright (c) 2022, 2023 Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -141,14 +141,16 @@ namespace SoDa {
     }
   }
 
-  Format & Format::addI(int v, unsigned int w, char sep) {
+  Format & Format::addI(int v, unsigned int w, char sep, char fill) {
     std::stringstream ss;
+    if(fill != '\000') {
+      ss << std::setfill(fill);
+    }
     if(sep == '\000') {
       if(w != 0) {
 	ss << std::setw(w); 
       }
       ss << v;
-
     }
     else {
       // print with comma separators
