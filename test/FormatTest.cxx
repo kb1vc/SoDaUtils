@@ -94,6 +94,16 @@ int main(int argc, char * argv[]) {
     .addI(0)
     .addU(0, 'X');
 
+  auto true_str = SoDa::Format("%0").addB(true).str();
+  bool bool_test = (true_str == "T");
+  auto false_str = SoDa::Format("%0").addB(false).str();
+  bool_test = bool_test && (false_str == "F");
+  
+  if(!bool_test) {
+    std::cerr << "FAIL -- bool printing is broken.\n";
+    exit(-1);
+  }
+  
   std::cerr << SoDa::Format("Testing adjacent markers [%0%1] should be [foobar]\n")
     .addS("foo")
     .addS("bar");

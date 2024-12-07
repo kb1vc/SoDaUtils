@@ -218,6 +218,7 @@ namespace SoDa {
      * - addF (float or double) 
      * - addS (string)
      * - addC (character)
+     * - addP (boolean)
      * 
      * Most of these provide for additional format directives that determine 
      * minimum field with and decimal precision. 
@@ -260,7 +261,8 @@ namespace SoDa {
      * checks every return value for errors.  And their code looks like 
      * crap. 
      * 
-     * ### Inside Baseball note
+     * Inside Baseball note:
+     *
      * More skillful programmers might have overloaded
      * one method name for all five types.  However, making a C++ compiler 
      * distinguish between add(int v) and add(unsigned int v) -- though it
@@ -438,6 +440,18 @@ namespace SoDa {
     Format & addC(char v);    
 
     /**
+     * @brief insert a boolean value (T or F) into the output string
+     * 
+     * @param v true or false
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     * Not much to say here. 
+     */
+    Format & addB(bool v);    
+
+
+    /**
      * @brief reset the format string to its original value, with all
      * the placeholders restored. 
      * 
@@ -595,6 +609,10 @@ namespace SoDa {
       return *saved_ptr; 
     }
     
+    T & addB(bool v) {
+      Format::addB(v);
+      return *saved_ptr; 
+    }
   private:
     T * saved_ptr; 
   };

@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
+CMAKE_MINIMUM_REQUIRED(VERSION 3.6.0) # this lets out really old distros like CentOS 6
 
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
@@ -30,8 +30,8 @@ INCLUDE(CheckCXXCompilerFlag)
 INCLUDE(GNUInstallDirs)
 INCLUDE(CTest)
 
-SET(SoDaUtils_VERSION_MAJOR 2)
-SET(SoDaUtils_VERSION_MINOR 7)
+SET(SoDaUtils_VERSION_MAJOR 3)
+SET(SoDaUtils_VERSION_MINOR 0)
 SET(SoDaUtils_VERSION_PATCH 0)
 SET(SoDaUtils_VERSION "${SoDaUtils_VERSION_MAJOR}.${SoDaUtils_VERSION_MINOR}.${SoDaUtils_VERSION_PATCH}")
 

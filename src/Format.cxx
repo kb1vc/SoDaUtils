@@ -10,7 +10,7 @@
 /*
 BSD 2-Clause License
 
-Copyright (c) 2022, 2023 Matt Reilly - kb1vc
+Copyright (c) 2022, 2023, 2024 Matt Reilly - kb1vc
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -528,6 +528,14 @@ namespace SoDa {
     return *this;
   }
 
+  Format & Format::addB(bool v) {
+    std::stringstream ss;
+    ss << (v ? "T" : "F");
+    insertField(ss.str());
+    return *this;
+  }
+
+  
   void Format::insertField(const std::string & s) {
     for (auto & fld : format_string_segments) {
       if((fld.seg_type == FmtStringSeg::FMT_VAL) && (fld.idx == cur_arg_number)) {
